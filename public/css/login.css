@@ -1,0 +1,282 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #FF9900, #FFD43B);
+    padding: 20px;
+}
+
+/* LOGIN CONTAINER */
+.login-container {
+    width: 100%;
+    max-width: 850px;
+    min-height: 500px;
+    background: #ffffff;
+    border-radius: 22px;
+    overflow: hidden;
+    display: flex;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, .15);
+}
+
+/* LEFT SIDE - KUNING & OREN GRADIENT */
+.login-left {
+    width: 50%;
+    background: linear-gradient(160deg, #FF9900, #FFC107);
+    color: #ffffff;
+    padding: 45px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ORNAMEN LINGKARAN DENGAN AKSEN MERAH TIPIS */
+.login-left::before {
+    content: '';
+    position: absolute;
+    width: 230px;
+    height: 230px;
+    background: rgba(255, 255, 255, .18);
+    border-radius: 50%;
+    top: -90px;
+    left: -70px;
+}
+
+.login-left::after {
+    content: '';
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    background: rgba(220, 38, 38, .15);
+    border-radius: 50%;
+    bottom: -70px;
+    right: -60px;
+}
+
+/* LOGO */
+.logo {
+    width: 75px;
+    height: 75px;
+    border-radius: 18px;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .12);
+}
+
+.logo img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+}
+
+/* TITLE */
+.login-left h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 2;
+}
+
+.login-left p {
+    line-height: 1.7;
+    font-size: 14px;
+    color: #ffffff;
+    opacity: .95;
+    max-width: 340px;
+    position: relative;
+    z-index: 2;
+}
+
+/* STAR - AKSEN MERAH */
+.star-row {
+    margin-top: 22px;
+    font-size: 25px;
+    color: #DC2626;
+    letter-spacing: 7px;
+    position: relative;
+    z-index: 2;
+}
+
+/* RIGHT SIDE - PUTIH */
+.login-right {
+    width: 50%;
+    padding: 45px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: #ffffff;
+}
+
+.login-right h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #222222;
+    margin-bottom: 6px;
+}
+
+.subtitle {
+    color: #666666;
+    font-size: 13px;
+    margin-bottom: 28px;
+}
+
+/* FORM */
+.form-group {
+    margin-bottom: 17px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    color: #444444;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* INPUT */
+.input-box {
+    position: relative;
+}
+
+.input-box span.icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #FF9900;
+}
+
+.input-box input {
+    width: 100%;
+    padding: 13px 45px;
+    border: 1px solid #E5E5E5;
+    border-radius: 10px;
+    font-size: 13px;
+    transition: .3s;
+    background: #ffffff;
+}
+
+.input-box input:focus {
+    outline: none;
+    border-color: #FF9900;
+    box-shadow: 0 0 0 4px rgba(255, 153, 0, .15);
+}
+
+/* PASSWORD TOGGLE */
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #999999;
+    font-size: 14px;
+}
+
+.toggle-password:hover {
+    color: #FF9900;
+}
+
+/* FORGOT PASSWORD - MERAH */
+.forgot {
+    text-align: right;
+    margin-top: 8px;
+}
+
+.forgot a {
+    text-decoration: none;
+    color: #DC2626;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.forgot a:hover {
+    color: #991B1B;
+    text-decoration: underline;
+}
+
+/* LOGIN BUTTON - LINK STYLE */
+.login-btn {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #FF9900, #DC2626);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none;
+    transition: .3s;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(220, 38, 38, .3);
+}
+
+/* FOOTER */
+.footer {
+    margin-top: 20px;
+    text-align: center;
+    color: #AAAAAA;
+    font-size: 10px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
+    }
+
+    .login-container {
+        min-height: auto;
+        border-radius: 20px;
+    }
+
+    .login-left {
+        display: none;
+    }
+
+    .login-right {
+        width: 100%;
+        padding: 35px 25px;
+    }
+
+    .login-right h2 {
+        font-size: 25px;
+    }
+}
+
+@media (max-width: 400px) {
+    .login-right {
+        padding: 30px 20px;
+    }
+
+    .login-right h2 {
+        font-size: 23px;
+    }
+
+    .subtitle {
+        font-size: 12px;
+    }
+}
