@@ -1,258 +1,319 @@
-@extends('layouts.app')
-
-@section('title', 'Kelola Akun - Bintang Poin')
-@section('page_title', 'Kelola Akun Pengguna')
-@section('page_description', 'Manajemen hak akses guru dan orangtua/wali')
+@extends('layouts.app') {{-- Sesuaikan nama layout Anda --}}
 
 @section('content')
-
-<div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-5 rounded-2xl border border-amber-100 shadow-sm">
-    <div class="relative w-full sm:w-80">
-        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Cari nama atau username..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition">
-    </div>
-
-    <button onclick="openModal('add')" class="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition">
-        <i class="fa-solid fa-plus text-sm"></i>
-        Tambah Pengguna Baru
-    </button>
-</div>
-
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-4">
-    <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse text-sm" id="accountTable">
-            <thead>
-                <tr class="border-b border-gray-100 text-gray-400 text-xs uppercase font-medium">
-                    <th class="py-3 px-4">Pengguna</th>
-                    <th class="py-3 px-4">Username</th>
-                    <th class="py-3 px-4">Role / Peran</th>
-                    <th class="py-3 px-4">Status</th>
-                    <th class="py-3 px-4 text-center">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-                <tr class="hover:bg-gray-50/50">
-                    <td class="py-3.5 px-4 font-semibold text-gray-700">Ustadz Ahmad</td>
-                    <td class="py-3.5 px-4 text-gray-500">ahmad_nf</td>
-                    <td class="py-3.5 px-4">
-                        <span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">Guru</span>
-                    </td>
-                    <td class="py-3.5 px-4">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-medium border border-emerald-200">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            Aktif
-                        </span>
-                    </td>
-                    <td class="py-3.5 px-4 text-center">
-                        <div class="flex items-center justify-center gap-2">
-                            <button onclick="openModal('edit', 'Ustadz Ahmad', 'ahmad_nf', 'Guru')" class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition" title="Edit">
-                                <i class="fa-solid fa-pen-to-square text-xs"></i>
-                            </button>
-                            <button onclick="deleteAccount(this)" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition" title="Hapus">
-                                <i class="fa-solid fa-trash text-xs"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-
-                <tr class="hover:bg-gray-50/50">
-                    <td class="py-3.5 px-4 font-semibold text-gray-700">Ustazah Siti Sarah</td>
-                    <td class="py-3.5 px-4 text-gray-500">sitisarah</td>
-                    <td class="py-3.5 px-4">
-                        <span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">Guru</span>
-                    </td>
-                    <td class="py-3.5 px-4">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-medium border border-emerald-200">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            Aktif
-                        </span>
-                    </td>
-                    <td class="py-3.5 px-4 text-center">
-                        <div class="flex items-center justify-center gap-2">
-                            <button onclick="openModal('edit', 'Ustazah Siti Sarah', 'sitisarah', 'Guru')" class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition" title="Edit">
-                                <i class="fa-solid fa-pen-to-square text-xs"></i>
-                            </button>
-                            <button onclick="deleteAccount(this)" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition" title="Hapus">
-                                <i class="fa-solid fa-trash text-xs"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-
-                <tr class="hover:bg-gray-50/50">
-                    <td class="py-3.5 px-4 font-semibold text-gray-700">Budi Pratama</td>
-                    <td class="py-3.5 px-4 text-gray-500">budipratama</td>
-                    <td class="py-3.5 px-4">
-                        <span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">Orangtua/Wali</span>
-                    </td>
-                    <td class="py-3.5 px-4">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-medium border border-emerald-200">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            Aktif
-                        </span>
-                    </td>
-                    <td class="py-3.5 px-4 text-center">
-                        <div class="flex items-center justify-center gap-2">
-                            <button onclick="openModal('edit', 'Budi Pratama', 'budipratama', 'Orangtua/Wali')" class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition" title="Edit">
-                                <i class="fa-solid fa-pen-to-square text-xs"></i>
-                            </button>
-                            <button onclick="deleteAccount(this)" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition" title="Hapus">
-                                <i class="fa-solid fa-trash text-xs"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div id="accountModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
-        <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4 text-white flex justify-between items-center">
-            <h3 id="modalTitle" class="font-bold text-base">Tambah Pengguna Baru</h3>
-            <button onclick="closeModal()" class="text-white/80 hover:text-white text-lg">
+<div class="container mx-auto px-4 py-6">
+    <!-- Alert Success -->
+    @if(session('success'))
+        <div class="mb-4 p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm font-medium flex items-center justify-between">
+            <span>{{ session('success') }}</span>
+            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
+    @endif
 
-        <form id="accountForm" onsubmit="saveAccount(event)" class="p-6 space-y-4 overflow-y-auto">
+    <!-- Alert Validation Errors -->
+    @if ($errors->any())
+        <div class="mb-4 p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm">
+            <div class="font-bold mb-1">Terjadi kesalahan input:</div>
+            <ul class="list-disc list-inside space-y-1">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <!-- Header Page & Tombol Tambah -->
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Kelola Akun Pengguna</h1>
+            <p class="text-sm text-gray-500">Kelola daftar akun pengguna sistem di sini.</p>
+        </div>
+        <button
+            type="button"
+            onclick="openModal('add')"
+            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition shadow-sm flex items-center gap-2"
+        >
+            <i class="fa-solid fa-plus text-xs"></i>
+            Tambah Pengguna
+        </button>
+    </div>
+
+    <!-- Tabel Data Pengguna -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-gray-600">
+                <thead class="bg-gray-50 text-gray-700 uppercase text-xs font-semibold">
+                    <tr>
+                        <th class="px-6 py-4">No</th>
+                        <th class="px-6 py-4">Nama</th>
+                        <th class="px-6 py-4">Nama Pengguna</th>
+                        <th class="px-6 py-4">Peran</th>
+                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse ($pengguna as $user)
+                        <tr class="hover:bg-gray-50/50 transition">
+                            <td class="px-6 py-4">{{ $loop->iteration }}</td>
+                            <td class="px-6 py-4 font-medium text-gray-900">{{ $user->nama }}</td>
+                            <td class="px-6 py-4">{{ $user->nama_pengguna }}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-blue-50 text-blue-600 uppercase">
+                                    {{ str_replace('_', ' ', $user->peran) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2.5 py-1 text-xs font-medium rounded-full {{ $user->status === 'aktif' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600' }} uppercase">
+                                    {{ $user->status ?? 'aktif' }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-center gap-2">
+                                    <!-- Tombol Edit -->
+                                    <button
+                                        type="button"
+                                        data-id="{{ $user->id }}"
+                                        data-nama="{{ $user->nama }}"
+                                        data-username="{{ $user->nama_pengguna }}"
+                                        data-role="{{ $user->peran }}"
+                                        data-status="{{ $user->status ?? 'aktif' }}"
+                                        onclick="openEditModal(this)"
+                                        class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition"
+                                        title="Edit"
+                                    >
+                                        <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                    </button>
+
+                                    <!-- Tombol Hapus -->
+                                    <form action="{{ route('guru.kelola.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus akun pengguna ini?');" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button
+                                            type="submit"
+                                            class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition"
+                                            title="Hapus"
+                                        >
+                                            <i class="fa-solid fa-trash text-xs"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-gray-400">
+                                Belum ada data pengguna.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Form (Tambah & Edit) -->
+<div id="userModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-xl transform transition-all overflow-hidden">
+        
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+            <h3 id="modalTitle" class="text-lg font-bold text-gray-800">Tambah Pengguna</h3>
+            <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body & Form -->
+        <form id="userForm" action="" method="POST" class="p-6 space-y-4">
+            @csrf
+            <input type="hidden" id="userId" name="id">
+
+            <!-- Field Nama -->
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">
-                    Nama Lengkap & Gelar <span class="text-rose-500">*</span>
-                </label>
-                <input type="text" id="inputNama" required placeholder="Contoh: Ustadz Abdullah, S.Pd." class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition">
+                <label for="nama" class="block text-xs font-semibold text-gray-700 uppercase mb-1">Nama Lengkap</label>
+                <input
+                    type="text"
+                    id="nama"
+                    name="nama"
+                    required
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Masukkan nama lengkap"
+                >
             </div>
 
+            <!-- Field Nama Pengguna / Username -->
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">
-                    Peran / Jabatan <span class="text-rose-500">*</span>
-                </label>
-                <select id="selectRole" required class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition cursor-pointer">
-                    <option value="">Pilih Peran Akun</option>
-                    <option value="Guru">Guru</option>
-                    <option value="Orangtua/Wali">Orangtua/Wali</option>
+                <label for="nama_pengguna" class="block text-xs font-semibold text-gray-700 uppercase mb-1">Nama Pengguna</label>
+                <input
+                    type="text"
+                    id="nama_pengguna"
+                    name="nama_pengguna"
+                    required
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Masukkan username"
+                >
+            </div>
+
+            <!-- Field Peran / Role -->
+            <div>
+                <label for="peran" class="block text-xs font-semibold text-gray-700 uppercase mb-1">Peran</label>
+                <select
+                    id="peran"
+                    name="peran"
+                    required
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                >
+                    <option value="" disabled selected>Pilih Peran</option>
+                    <option value="guru">Guru</option>
+                    <option value="orang_tua">Orang Tua</option>
                 </select>
             </div>
 
-            <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">
-                    Username <span class="text-rose-500">*</span>
-                </label>
-                <div class="relative">
-                    <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                    <input type="text" id="inputUsername" required placeholder="username_ustadz" class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition">
-                </div>
+            <!-- Field Status (Hanya Muncul/Digunakan Saat Edit) -->
+            <div id="statusContainer" class="hidden">
+                <label for="status" class="block text-xs font-semibold text-gray-700 uppercase mb-1">Status</label>
+                <select
+                    id="status"
+                    name="status"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                >
+                    <option value="aktif">Aktif</option>
+                    <option value="nonaktif">Nonaktif</option>
+                </select>
             </div>
 
+            <!-- Field Kata Sandi -->
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">
-                    Kata Sandi <span class="text-rose-500">*</span>
-                </label>
-                <div class="relative">
-                    <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                    <input type="password" id="inputPassword" placeholder="••••••••" class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition">
-                </div>
+                <label for="kata_sandi" class="block text-xs font-semibold text-gray-700 uppercase mb-1">Kata Sandi</label>
+                <input
+                    type="password"
+                    id="kata_sandi"
+                    name="kata_sandi"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="••••••••"
+                >
+                <p id="passwordHelp" class="text-xs text-amber-600 mt-1 font-medium"></p>
             </div>
 
+            <!-- Field Konfirmasi Kata Sandi (Wajib karena validasi 'confirmed' di Controller) -->
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">
-                    Konfirmasi Kata Sandi <span class="text-rose-500">*</span>
-                </label>
-                <div class="relative">
-                    <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                    <input type="password" id="inputConfirmPassword" placeholder="••••••••" class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition">
-                </div>
+                <label for="kata_sandi_confirmation" class="block text-xs font-semibold text-gray-700 uppercase mb-1">Konfirmasi Kata Sandi</label>
+                <input
+                    type="password"
+                    id="kata_sandi_confirmation"
+                    name="kata_sandi_confirmation"
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="••••••••"
+                >
             </div>
 
-            <div class="flex justify-end gap-2 pt-4 border-t">
-                <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-200 transition">
+            <!-- Modal Footer / Action Buttons -->
+            <div class="pt-4 flex items-center justify-end gap-3 border-t border-gray-100">
+                <button
+                    type="button"
+                    onclick="closeModal()"
+                    class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition"
+                >
                     Batal
                 </button>
-                <button type="submit" class="px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-medium hover:bg-amber-600 transition">
-                    Simpan Akun
+                <button
+                    type="submit"
+                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition shadow-sm"
+                >
+                    Simpan
                 </button>
             </div>
         </form>
     </div>
 </div>
 
-@endsection
-
-@push('scripts')
+<!-- JavaScript Logic -->
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const dateElement = document.getElementById('currentDate');
-    if (dateElement) {
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        dateElement.textContent = new Date().toLocaleDateString('id-ID', options);
-    }
-});
+    function openModal(mode, id = '', nama = '', username = '', role = '', status = 'aktif') {
+        const modal = document.getElementById('userModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const userForm = document.getElementById('userForm');
+        
+        const userIdInput = document.getElementById('userId');
+        const namaInput = document.getElementById('nama');
+        const usernameInput = document.getElementById('nama_pengguna');
+        const roleInput = document.getElementById('peran');
+        const statusInput = document.getElementById('status');
+        const statusContainer = document.getElementById('statusContainer');
+        const passwordInput = document.getElementById('kata_sandi');
+        const passwordConfirmInput = document.getElementById('kata_sandi_confirmation');
+        const passwordHelp = document.getElementById('passwordHelp');
 
-function openModal(mode, nama = '', username = '', role = '') {
-    const modal = document.getElementById('accountModal');
-    const title = document.getElementById('modalTitle');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+        if (mode === 'edit') {
+            modalTitle.innerText = 'Edit Pengguna';
+            userForm.action = `/guru/kelola-akun/${id}`; // URL update
+            
+            // Atur Method Spoofing PUT
+            let methodInput = document.getElementById('methodField');
+            if (!methodInput) {
+                methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.id = 'methodField';
+                userForm.appendChild(methodInput);
+            }
+            methodInput.value = 'PUT';
 
-    if (mode === 'add') {
-        title.textContent = 'Tambah Pengguna Baru';
-        document.getElementById('inputNama').value = '';
-        document.getElementById('inputUsername').value = '';
-        document.getElementById('inputPassword').value = '';
-        document.getElementById('inputConfirmPassword').value = '';
-        document.getElementById('selectRole').value = '';
-    } else {
-        title.textContent = 'Edit Pengguna';
-        document.getElementById('inputNama').value = nama;
-        document.getElementById('inputUsername').value = username;
-        document.getElementById('selectRole').value = role;
-        document.getElementById('inputPassword').value = '';
-        document.getElementById('inputConfirmPassword').value = '';
-    }
-}
+            // Fill values
+            userIdInput.value = id;
+            namaInput.value = nama;
+            usernameInput.value = username;
+            roleInput.value = role;
+            statusInput.value = status;
+            statusContainer.classList.remove('hidden');
 
-function closeModal() {
-    const modal = document.getElementById('accountModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-}
+            passwordInput.value = '';
+            passwordConfirmInput.value = '';
+            passwordInput.required = false;
 
-function saveAccount(event) {
-    event.preventDefault();
-    const password = document.getElementById('inputPassword').value;
-    const confirmPassword = document.getElementById('inputConfirmPassword').value;
-
-    if (password && confirmPassword && password !== confirmPassword) {
-        alert('Konfirmasi kata sandi tidak cocok!');
-        return;
-    }
-
-    alert('Data pengguna berhasil disimpan!');
-    closeModal();
-}
-
-function deleteAccount(button) {
-    if (confirm('Apakah Anda yakin ingin menghapus akun ini?')) {
-        const row = button.closest('tr');
-        row.remove();
-    }
-}
-
-function filterTable() {
-    const input = document.getElementById('searchInput').value.toLowerCase();
-    const rows = document.querySelectorAll('#accountTable tbody tr');
-
-    rows.forEach(row => {
-        const nama = row.cells[0].textContent.toLowerCase();
-        const username = row.cells[1].textContent.toLowerCase();
-
-        if (nama.includes(input) || username.includes(input)) {
-            row.style.display = '';
+            if (passwordHelp) {
+                passwordHelp.innerText = '*Kosongkan jika tidak ingin mengubah kata sandi';
+            }
         } else {
-            row.style.display = 'none';
+            modalTitle.innerText = 'Tambah Pengguna';
+            userForm.action = '/guru/kelola-akun'; // URL store
+            
+            const methodInput = document.getElementById('methodField');
+            if (methodInput) {
+                methodInput.remove();
+            }
+
+            // Reset values
+            userForm.reset();
+            userIdInput.value = '';
+            statusContainer.classList.add('hidden');
+            passwordInput.required = true;
+
+            if (passwordHelp) {
+                passwordHelp.innerText = '';
+            }
         }
-    });
-}
+
+        modal.classList.remove('hidden');
+    }
+
+    function openEditModal(button) {
+        const id = button.getAttribute('data-id');
+        const nama = button.getAttribute('data-nama');
+        const username = button.getAttribute('data-username');
+        const role = button.getAttribute('data-role');
+        const status = button.getAttribute('data-status');
+
+        openModal('edit', id, nama, username, role, status);
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('userModal');
+        modal.classList.add('hidden');
+    }
 </script>
-@endpush
+@endsection

@@ -71,9 +71,9 @@
 
 
             {{-- RELASI --}}
-            <a href="{{ route('guru.relasi') }}"
+            <a href="{{ route('guru.relasi-wali-siswa.index') }}"
                class="flex items-center gap-3 px-3 py-2 rounded-lg transition
-               {{ request()->routeIs('guru.relasi')
+               {{ request()->routeIs('guru.relasi-wali-siswa.index')
                     ? 'bg-white/20 text-white shadow-sm'
                     : 'hover:bg-white/10 text-amber-50' }}">
 

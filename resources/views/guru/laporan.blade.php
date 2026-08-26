@@ -1,174 +1,87 @@
 @extends('layouts.app')
-
-@section('title', 'Laporan Poin - Bintang Poin')
-@section('page_title', 'Laporan Akhir Poin Siswa')
-@section('page_description', 'Unduh rekapitulasi sisa poin serta predikat karakter siswa per kelas')
-
+@section('title','Arsip Alumni & Siswa - Bintang Poin')
+@section('page_title','Arsip Alumni & Siswa Keluar')
+@section('page_description','Kumpulan riwayat poin dan histori data alumni serta siswa yang pindah sekolah')
 @section('content')
 
-{{-- FILTER --}}
-<div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-wrap items-center gap-3">
-    {{-- SEARCH --}}
-    <div class="relative flex-1 min-w-[200px]">
+<div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between gap-4">
+    <div class="relative flex-1">
         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Cari NIS atau Nama Siswa..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition">
+        <input type="text" id="searchFolder" onkeyup="filterFolders()" placeholder="Cari folder angkatan, tahun lulus, atau nama siswa..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition">
     </div>
-
-    {{-- FILTER KELAS --}}
-    <div class="flex items-center gap-2 bg-gray-50 px-3 py-2 border border-gray-200 rounded-xl">
-        <i class="fa-solid fa-filter text-amber-500 text-xs"></i>
-        <select id="filterKelas" onchange="filterTable()" class="bg-transparent text-xs font-semibold text-gray-700 focus:outline-none cursor-pointer">
-            <option value="all">Semua Kelas</option>
-            <option value="3-B">Kelas 3-B</option>
-            <option value="4-A">Kelas 4-A</option>
-            <option value="5-A">Kelas 5-A</option>
-            <option value="5-B">Kelas 5-B</option>
-            <option value="6-A">Kelas 6-A</option>
-            <option value="6-B">Kelas 6-B</option>
-        </select>
-    </div>
-
-    {{-- FILTER PERIODE --}}
-    <select id="filterPeriode" class="px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-700 focus:outline-none focus:border-amber-500 cursor-pointer">
-        <option value="08-2026">Agustus 2026</option>
-        <option value="sem-1">Semester Ganjil 2026/2027</option>
-    </select>
 </div>
 
-{{-- TABLE --}}
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-4">
-    {{-- TABLE HEADER --}}
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
-        <div>
-            <h3 class="text-base font-bold text-gray-800">
-                Daftar Sisa Poin Siswa
-            </h3>
-            <p class="text-xs text-gray-500">
-                Rekap saldo akhir poin kedisiplinan dan karakter siswa
-            </p>
+<div id="folderSection" class="space-y-6 mt-6">
+    <div>
+        <div class="flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-thumbtack text-amber-500 text-xs rotate-45"></i>
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Folder Disematkan (Pinned)</h3>
         </div>
-
-        <div class="flex flex-wrap items-center gap-3">
-            <span id="totalSiswaBadge" class="text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
-                Menampilkan 5 Siswa
-            </span>
-
-            <button type="button" onclick="exportExcel()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-sm transition">
-                <i class="fa-solid fa-file-excel text-sm"></i>
-                Export Excel
-            </button>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div onclick="openFolder('Siswa Pindah / Keluar','pindah')" class="bg-amber-50/50 hover:bg-amber-100/50 border border-amber-200/80 p-5 rounded-2xl cursor-pointer transition shadow-sm group relative overflow-hidden">
+                <div class="absolute top-3 right-3 text-amber-500"><i class="fa-solid fa-thumbtack text-xs rotate-45"></i></div>
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-amber-500 text-white rounded-xl flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition"><i class="fa-solid fa-person-walking-arrow-right"></i></div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 group-hover:text-amber-600 transition">Siswa Pindah / Keluar</h4>
+                        <p class="text-xs text-gray-500">{{ $pindah->count() }} Siswa Mutasi</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    {{-- TABLE CONTENT --}}
-    <div class="overflow-x-auto mt-4">
-        <table class="w-full text-left border-collapse text-sm" id="reportTable">
-            <thead>
-                <tr class="border-b border-gray-100 text-gray-400 text-xs uppercase font-medium">
-                    <th class="py-3.5 px-4 w-12">No</th>
-                    <th class="py-3.5 px-4">NIS</th>
-                    <th class="py-3.5 px-4">Nama Siswa</th>
-                    <th class="py-3.5 px-4">Kelas</th>
-                    <th class="py-3.5 px-4 text-center">Sisa Poin Aktif</th>
-                    <th class="py-3.5 px-4 text-center">Predikat Karakter</th>
-                </tr>
-            </thead>
+    <div>
+        <div class="flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-folder-closed text-amber-500 text-xs"></i>
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Folder Alumni Kelulusan</h3>
+        </div>
 
-            <tbody class="divide-y divide-gray-50">
-                {{-- DATA 1 --}}
-                <tr class="hover:bg-gray-50/50" data-kelas="6-A">
-                    <td class="py-3.5 px-4 text-xs font-bold text-gray-400">1</td>
-                    <td class="py-3.5 px-4 font-mono text-xs text-gray-500">20260103</td>
-                    <td class="py-3.5 px-4 font-bold text-gray-800">Fatimah Az-Zahra</td>
-                    <td class="py-3.5 px-4 text-gray-500 font-semibold">6-A</td>
-                    <td class="py-3.5 px-4 text-center">
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-xl font-extrabold text-base border border-amber-200/60">
-                            <i class="fa-solid fa-star text-xs"></i>
-                            275
-                        </span>
-                    </td>
-                    <td class="py-3.5 px-4 text-center">
-                        <span class="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-full text-[11px] font-bold">
-                            Sangat Baik
-                        </span>
-                    </td>
-                </tr>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4" id="alumniFolders">
+            @forelse($tahunAlumni as $folder)
+                <div onclick="openFolder('Kelulusan {{ $folder['tahun'] }} ({{ $folder['nama_angkatan'] ?? 'Alumni' }})','{{ $folder['tahun'] }}')" class="bg-white hover:border-amber-400 border border-gray-200 p-5 rounded-2xl cursor-pointer transition shadow-sm group">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-11 h-11 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center text-lg group-hover:bg-amber-500 group-hover:text-white transition"><i class="fa-solid fa-folder"></i></div>
+                        <div>
+                            <h4 class="font-bold text-sm text-gray-800 group-hover:text-amber-600 transition">Kelulusan {{ $folder['tahun'] }}</h4>
+                            <p class="text-[11px] text-gray-400">{{ $folder['jumlah'] }} Alumni • {{ $folder['nama_angkatan'] ?? 'Alumni' }}</p>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="col-span-full py-10 text-center text-gray-400 text-xs">Belum ada data alumni di database.</div>
+            @endforelse
+        </div>
+    </div>
+</div>
 
-                {{-- DATA 2 --}}
-                <tr class="hover:bg-gray-50/50" data-kelas="4-A">
-                    <td class="py-3.5 px-4 text-xs font-bold text-gray-400">2</td>
-                    <td class="py-3.5 px-4 font-mono text-xs text-gray-500">20260101</td>
-                    <td class="py-3.5 px-4 font-bold text-gray-800">Muhammad Raihan</td>
-                    <td class="py-3.5 px-4 text-gray-500 font-semibold">4-A</td>
-                    <td class="py-3.5 px-4 text-center">
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-xl font-extrabold text-base border border-amber-200/60">
-                            <i class="fa-solid fa-star text-xs"></i>
-                            260
-                        </span>
-                    </td>
-                    <td class="py-3.5 px-4 text-center">
-                        <span class="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-full text-[11px] font-bold">
-                            Sangat Baik
-                        </span>
-                    </td>
-                </tr>
+<div id="detailSection" class="hidden space-y-4 mt-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+        <div class="flex items-center gap-3">
+            <button onclick="closeFolder()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold flex items-center gap-2 transition"><i class="fa-solid fa-arrow-left"></i>Kembali</button>
+            <div>
+                <h3 id="currentFolderName" class="text-base font-bold text-gray-800"></h3>
+                <p class="text-xs text-gray-400">Daftar riwayat poin akhir siswa pada folder ini</p>
+            </div>
+        </div>
+    </div>
 
-                {{-- DATA 3 --}}
-                <tr class="hover:bg-gray-50/50" data-kelas="5-B">
-                    <td class="py-3.5 px-4 text-xs font-bold text-gray-400">3</td>
-                    <td class="py-3.5 px-4 font-mono text-xs text-gray-500">20260102</td>
-                    <td class="py-3.5 px-4 font-bold text-gray-800">Aisyah Azzahra</td>
-                    <td class="py-3.5 px-4 text-gray-500 font-semibold">5-B</td>
-                    <td class="py-3.5 px-4 text-center">
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-xl font-extrabold text-base border border-amber-200/60">
-                            <i class="fa-solid fa-star text-xs"></i>
-                            255
-                        </span>
-                    </td>
-                    <td class="py-3.5 px-4 text-center">
-                        <span class="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-full text-[11px] font-bold">
-                            Sangat Baik
-                        </span>
-                    </td>
-                </tr>
-
-                {{-- DATA 4 --}}
-                <tr class="hover:bg-gray-50/50" data-kelas="3-B">
-                    <td class="py-3.5 px-4 text-xs font-bold text-gray-400">4</td>
-                    <td class="py-3.5 px-4 font-mono text-xs text-gray-500">20260105</td>
-                    <td class="py-3.5 px-4 font-semibold text-gray-700">Fikri Zulkarnain</td>
-                    <td class="py-3.5 px-4 text-gray-500 font-semibold">3-B</td>
-                    <td class="py-3.5 px-4 text-center">
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-700 rounded-xl font-bold text-base border border-slate-200">
-                            40
-                        </span>
-                    </td>
-                    <td class="py-3.5 px-4 text-center">
-                        <span class="px-3 py-1 bg-blue-50 text-blue-700 border border-blue-200/80 rounded-full text-[11px] font-semibold">
-                            Baik
-                        </span>
-                    </td>
-                </tr>
-
-                {{-- DATA 5 --}}
-                <tr class="hover:bg-gray-50/50" data-kelas="6-B">
-                    <td class="py-3.5 px-4 text-xs font-bold text-gray-400">5</td>
-                    <td class="py-3.5 px-4 font-mono text-xs text-gray-500">20260112</td>
-                    <td class="py-3.5 px-4 font-semibold text-gray-700">Davin Rizky</td>
-                    <td class="py-3.5 px-4 text-gray-500 font-semibold">6-B</td>
-                    <td class="py-3.5 px-4 text-center">
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 rounded-xl font-bold text-base border border-rose-200">
-                            -15
-                        </span>
-                    </td>
-                    <td class="py-3.5 px-4 text-center">
-                        <span class="px-3 py-1 bg-rose-50 text-rose-700 border border-rose-200/80 rounded-full text-[11px] font-semibold">
-                            Cukup
-                        </span>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                    <tr class="border-b border-gray-100 text-gray-400 text-xs uppercase font-medium">
+                        <th class="py-3 px-4 w-12">No</th>
+                        <th class="py-3 px-4">NIS</th>
+                        <th class="py-3 px-4">Nama Siswa</th>
+                        <th class="py-3 px-4">Kelas Terakhir</th>
+                        <th class="py-3 px-4 text-center">Poin Akhir</th>
+                        <th class="py-3 px-4 text-center">Status / Ket</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50" id="studentTableBody"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -176,48 +89,56 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    filterTable();
-});
+const archiveData=@json($tahunAlumni->mapWithKeys(function($folder){return [$folder['tahun']=>$folder['data']];})->put('pindah',$pindah->values()));
 
-function filterTable() {
-    const searchInput = document.getElementById('searchInput');
-    const filterKelas = document.getElementById('filterKelas');
+function openFolder(title,key){
+    document.getElementById('folderSection').classList.add('hidden');
+    document.getElementById('detailSection').classList.remove('hidden');
+    document.getElementById('currentFolderName').textContent=title;
 
-    if (!searchInput || !filterKelas) {
+    const tbody=document.getElementById('studentTableBody');
+    tbody.innerHTML='';
+
+    const students=archiveData[key]||[];
+
+    if(students.length===0){
+        tbody.innerHTML='<tr><td colspan="6" class="py-10 text-center text-gray-400 text-xs">Belum ada data siswa pada folder ini.</td></tr>';
         return;
     }
 
-    const search = searchInput.value.toLowerCase().trim();
-    const selectedKelas = filterKelas.value;
-    const rows = document.querySelectorAll('#reportTable tbody tr');
+    students.forEach(function(student,index){
+        const tr=document.createElement('tr');
+        tr.className='hover:bg-gray-50/50';
+        const status=student.catatan_status||(student.jenis_arsip==='lulus'?'Lulus':'Pindah');
 
-    let visibleCount = 0;
-
-    rows.forEach(function(row) {
-        const nis = row.cells[1].textContent.toLowerCase();
-        const nama = row.cells[2].textContent.toLowerCase();
-        const rowKelas = row.getAttribute('data-kelas');
-
-        const matchesSearch = nis.includes(search) || nama.includes(search);
-        const matchesKelas = selectedKelas === 'all' || rowKelas === selectedKelas;
-
-        if (matchesSearch && matchesKelas) {
-            row.style.display = '';
-            visibleCount++;
-        } else {
-            row.style.display = 'none';
-        }
+        tr.innerHTML=`
+            <td class="py-3.5 px-4 text-xs font-bold text-gray-400">${index+1}</td>
+            <td class="py-3.5 px-4 font-mono text-xs text-gray-500">${student.nis||'-'}</td>
+            <td class="py-3.5 px-4 font-bold text-gray-800">${student.nama_lengkap||'-'}</td>
+            <td class="py-3.5 px-4 text-gray-500 font-semibold">${student.kelas_terakhir||'-'}</td>
+            <td class="py-3.5 px-4 text-center">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-xl font-extrabold text-xs border border-amber-200/60">
+                    <i class="fa-solid fa-star text-[10px]"></i>${student.poin_akhir??0}
+                </span>
+            </td>
+            <td class="py-3.5 px-4 text-center">
+                <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-[11px] font-semibold">${status}</span>
+            </td>
+        `;
+        tbody.appendChild(tr);
     });
-
-    const badge = document.getElementById('totalSiswaBadge');
-    if (badge) {
-        badge.textContent = `Menampilkan ${visibleCount} Siswa`;
-    }
 }
 
-function exportExcel() {
-    alert('Fitur Export Excel akan dihubungkan ke Laravel setelah bagian database selesai.');
+function closeFolder(){
+    document.getElementById('detailSection').classList.add('hidden');
+    document.getElementById('folderSection').classList.remove('hidden');
+}
+
+function filterFolders(){
+    const search=document.getElementById('searchFolder').value.toLowerCase().trim();
+    document.querySelectorAll('#alumniFolders > div').forEach(function(folder){
+        folder.style.display=folder.textContent.toLowerCase().includes(search)?'':'none';
+    });
 }
 </script>
 @endpush

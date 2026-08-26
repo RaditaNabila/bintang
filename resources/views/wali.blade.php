@@ -56,12 +56,22 @@
                     <select id="childSelector"
                             onchange="switchChild()"
                             class="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer">
-                        <option value="fikri" class="text-gray-800" selected>
-                            Fikri Zulkarnain (3-B)
-                        </option>
-                        <option value="aisyah" class="text-gray-800">
-                            Aisyah Humaira (1-A)
-                        </option>
+
+                        @foreach($anak as $item)
+
+                            <option
+                                value="{{ $item->id }}"
+                                class="text-gray-800"
+                                {{ $siswa && $siswa->id == $item->id ? 'selected' : '' }}
+                            >
+                                {{ $item->nama_lengkap }}
+                                @if($item->kelas)
+                                    ({{ $item->kelas->nama_kelas }})
+                                @endif
+                            </option>
+
+                        @endforeach
+
                     </select>
                 </div>
 
@@ -94,17 +104,20 @@
                         Siswa Aktif
                     </span>
 
-                    <h2 id="studentName" class="text-lg sm:text-xl font-bold text-gray-800 mt-1">
-                        Fikri Zulkarnain
+                    <h2 class="text-lg sm:text-xl font-bold text-gray-800 mt-1">
+                        {{ $siswa->nama_lengkap }}
                     </h2>
 
                     <p class="text-xs text-gray-500">
-                        NIS: <span id="studentNis" class="font-mono">20260105</span> |
-                        Kelas: <span id="studentClass" class="font-semibold text-gray-700">3-B</span>
-                    </p>
-
-                    <p class="text-[11px] text-gray-400 mt-0.5">
-                        Wali Kelas: <span id="teacherName" class="text-gray-600 font-medium">Ustadz Ahmad</span>
+                        NIS:
+                        <span class="font-mono">
+                            {{ $siswa->nis ?? '-' }}
+                        </span>
+                        |
+                        Kelas:
+                        <span class="font-semibold text-gray-700">
+                            {{ $siswa->kelas->nama_kelas ?? '-' }}
+                        </span>
                     </p>
                 </div>
             </div>
@@ -118,7 +131,7 @@
 
                     <div class="flex items-baseline gap-1 mt-0.5">
                         <span id="totalScore" class="text-3xl font-extrabold text-amber-600">
-                            260
+                            {{ $totalScore }}
                         </span>
                         <span class="text-xs text-gray-500 font-medium">
                             / 250 Poin Awal
@@ -149,10 +162,10 @@
 
                     <div class="flex items-baseline gap-2 mt-1">
                         <h3 id="statPrestasi" class="text-2xl font-bold text-emerald-600">
-                            +25 Poin
+                            +{{ $totalPrestasi }} Poin
                         </h3>
                         <span id="countPrestasi" class="text-xs text-gray-500 font-medium">
-                            (2 Kejadian)
+                            ({{ $jumlahPrestasi }} Kejadian)
                         </span>
                     </div>
 
@@ -175,10 +188,10 @@
 
                     <div class="flex items-baseline gap-2 mt-1">
                         <h3 id="statPelanggaran" class="text-2xl font-bold text-rose-600">
-                            -15 Poin
+                            -{{ $totalPelanggaran }} Poin
                         </h3>
                         <span id="countPelanggaran" class="text-xs text-gray-500 font-medium">
-                            (2 Kejadian)
+                            ({{ $jumlahPelanggaran }} Kejadian)
                         </span>
                     </div>
 
@@ -230,129 +243,127 @@
 
             {{-- Log Items --}}
             <div class="space-y-3" id="logContainer">
-                {{-- Prestasi 1 --}}
-                <div class="log-item log-prestasi p-4 rounded-2xl bg-emerald-50/40 border border-emerald-100 flex items-start justify-between gap-4">
-                    <div class="flex items-start gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm">
-                            <i class="fa-solid fa-award"></i>
-                        </div>
 
-                        <div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md text-[10px] font-bold">
-                                    PRESTASI
-                                </span>
-                                <span class="text-xs text-gray-400">22 Aug 2026</span>
+                @forelse($riwayatPoin as $transaksi)
+
+                    @php
+                        $isPrestasi = $transaksi->jenis === 'apresiasi';
+                    @endphp
+
+                    <div class="log-item {{ $isPrestasi ? 'log-prestasi' : 'log-pelanggaran' }}
+                                p-4 rounded-2xl
+                                {{ $isPrestasi
+                                    ? 'bg-emerald-50/40 border border-emerald-100'
+                                    : 'bg-rose-50/40 border border-rose-100' }}
+                                flex items-start justify-between gap-4">
+
+                        <div class="flex items-start gap-3">
+
+                            {{-- ICON --}}
+                            <div class="w-9 h-9 rounded-xl
+                                        {{ $isPrestasi
+                                            ? 'bg-emerald-500'
+                                            : 'bg-rose-500' }}
+                                        text-white flex items-center justify-center
+                                        text-sm shrink-0 mt-0.5 shadow-sm">
+
+                                <i class="fa-solid
+                                    {{ $isPrestasi
+                                        ? 'fa-award'
+                                        : 'fa-triangle-exclamation' }}">
+                                </i>
+
                             </div>
 
-                            <h4 class="text-sm font-semibold text-gray-800 mt-1">
-                                Juara 1 Lomba Hafalan Surah Pendek
-                            </h4>
+                            {{-- INFORMASI --}}
+                            <div>
 
-                            <p class="text-xs text-gray-500 mt-0.5">
-                                Diberikan oleh: <span class="font-medium text-gray-700">Ustadzah Siti</span>
-                            </p>
-                        </div>
-                    </div>
+                                <div class="flex items-center gap-2 flex-wrap">
 
-                    <div class="text-right shrink-0">
-                        <span class="text-base font-bold text-emerald-600">+15</span>
-                        <p class="text-[10px] text-gray-400">Poin Tambahan</p>
-                    </div>
-                </div>
+                                    <span class="px-2 py-0.5
+                                        {{ $isPrestasi
+                                            ? 'bg-emerald-100 text-emerald-800'
+                                            : 'bg-rose-100 text-rose-800' }}
+                                        rounded-md text-[10px] font-bold">
 
-                {{-- Pelanggaran 1 --}}
-                <div class="log-item log-pelanggaran p-4 rounded-2xl bg-rose-50/40 border border-rose-100 flex items-start justify-between gap-4">
-                    <div class="flex items-start gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-rose-500 text-white flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                        </div>
+                                        {{ $isPrestasi ? 'PRESTASI' : 'PELANGGARAN' }}
 
-                        <div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded-md text-[10px] font-bold">
-                                    PELANGGARAN
-                                </span>
-                                <span class="text-xs text-gray-400">20 Aug 2026</span>
+                                    </span>
+
+                                    <span class="text-xs text-gray-400">
+
+                                        {{ \Carbon\Carbon::parse($transaksi->tanggal_transaksi)->translatedFormat('d M Y') }}
+
+                                    </span>
+
+                                </div>
+
+                                {{-- KETERANGAN --}}
+                                <h4 class="text-sm font-semibold text-gray-800 mt-1">
+
+                                    {{ $transaksi->keterangan }}
+
+                                </h4>
+
+                                {{-- JENIS --}}
+                                <p class="text-xs text-gray-500 mt-0.5">
+
+                                    {{ $isPrestasi ? 'Poin tambahan' : 'Poin pengurangan' }}
+
+                                </p>
+
                             </div>
 
-                            <h4 class="text-sm font-semibold text-gray-800 mt-1">
-                                Terlambat Masuk Sekolah (&gt;15 Menit)
-                            </h4>
+                        </div>
 
-                            <p class="text-xs text-gray-500 mt-0.5">
-                                Sanksi: <span class="font-medium text-gray-700">Teguran lisan &amp; piket kebersihan</span>
+                        {{-- JUMLAH POIN --}}
+                        <div class="text-right shrink-0">
+
+                            <span class="text-base font-bold
+                                {{ $isPrestasi
+                                    ? 'text-emerald-600'
+                                    : 'text-rose-600' }}">
+
+                                {{ $isPrestasi ? '+' : '-' }}{{ $transaksi->poin }}
+
+                            </span>
+
+                            <p class="text-[10px] text-gray-400">
+
+                                {{ $isPrestasi
+                                    ? 'Poin Tambahan'
+                                    : 'Poin Pengurangan' }}
+
                             </p>
-                        </div>
-                    </div>
 
-                    <div class="text-right shrink-0">
-                        <span class="text-base font-bold text-rose-600">-5</span>
-                        <p class="text-[10px] text-gray-400">Poin Pengurangan</p>
-                    </div>
-                </div>
-
-                {{-- Prestasi 2 --}}
-                <div class="log-item log-prestasi p-4 rounded-2xl bg-emerald-50/40 border border-emerald-100 flex items-start justify-between gap-4">
-                    <div class="flex items-start gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm">
-                            <i class="fa-solid fa-award"></i>
                         </div>
 
-                        <div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md text-[10px] font-bold">
-                                    PRESTASI
-                                </span>
-                                <span class="text-xs text-gray-400">15 Aug 2026</span>
-                            </div>
-
-                            <h4 class="text-sm font-semibold text-gray-800 mt-1">
-                                Membantu Kebersihan Musholla Sekolah
-                            </h4>
-
-                            <p class="text-xs text-gray-500 mt-0.5">
-                                Diberikan oleh: <span class="font-medium text-gray-700">Ustadz Ahmad</span>
-                            </p>
-                        </div>
                     </div>
 
-                    <div class="text-right shrink-0">
-                        <span class="text-base font-bold text-emerald-600">+10</span>
-                        <p class="text-[10px] text-gray-400">Poin Tambahan</p>
-                    </div>
-                </div>
+                @empty
 
-                {{-- Pelanggaran 2 --}}
-                <div class="log-item log-pelanggaran p-4 rounded-2xl bg-rose-50/40 border border-rose-100 flex items-start justify-between gap-4">
-                    <div class="flex items-start gap-3">
-                        <div class="w-9 h-9 rounded-xl bg-rose-500 text-white flex items-center justify-center text-sm shrink-0 mt-0.5 shadow-sm">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
+                    <div class="text-center py-10">
+
+                        <div class="w-12 h-12 bg-gray-100 rounded-2xl
+                                    flex items-center justify-center
+                                    mx-auto mb-3 text-gray-400">
+
+                            <i class="fa-solid fa-clipboard-list"></i>
+
                         </div>
 
-                        <div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded-md text-[10px] font-bold">
-                                    PELANGGARAN
-                                </span>
-                                <span class="text-xs text-gray-400">10 Aug 2026</span>
-                            </div>
+                        <p class="text-sm font-medium text-gray-500">
+                            Belum ada riwayat poin
+                        </p>
 
-                            <h4 class="text-sm font-semibold text-gray-800 mt-1">
-                                Tidak Mengerjakan Tugas &amp; Seragam Tidak Lengkap
-                            </h4>
+                        <p class="text-xs text-gray-400 mt-1">
+                            Belum terdapat transaksi poin untuk siswa ini.
+                        </p>
 
-                            <p class="text-xs text-gray-500 mt-0.5">
-                                Sanksi: <span class="font-medium text-gray-700">Catatan buku penghubung ortu</span>
-                            </p>
-                        </div>
                     </div>
 
-                    <div class="text-right shrink-0">
-                        <span class="text-base font-bold text-rose-600">-10</span>
-                        <p class="text-[10px] text-gray-400">Poin Pengurangan</p>
-                    </div>
-                </div>
+                @endforelse
+
             </div>
         </div>
 
@@ -405,31 +416,6 @@
 
     {{-- JAVASCRIPT --}}
     <script>
-        const childrenData = {
-            fikri: {
-                name: "Fikri Zulkarnain",
-                nis: "20260105",
-                class: "3-B",
-                teacher: "Ustadz Ahmad",
-                totalScore: 260,
-                prestasi: "+25 Poin",
-                countPrestasi: "(2 Kejadian)",
-                pelanggaran: "-15 Poin",
-                countPelanggaran: "(2 Kejadian)"
-            },
-            aisyah: {
-                name: "Aisyah Humaira",
-                nis: "20260119",
-                class: "1-A",
-                teacher: "Ustadzah Fatimah",
-                totalScore: 268,
-                prestasi: "+18 Poin",
-                countPrestasi: "(2 Kejadian)",
-                pelanggaran: "-0 Poin",
-                countPelanggaran: "(0 Kejadian)"
-            }
-        };
-
         // Modal Logout Control
         function openLogoutModal() {
             document.getElementById('logoutModal').classList.remove('hidden');
@@ -441,18 +427,14 @@
 
         // Ganti data anak
         function switchChild() {
-            const selected = document.getElementById('childSelector').value;
-            const data = childrenData[selected];
 
-            document.getElementById('studentName').textContent = data.name;
-            document.getElementById('studentNis').textContent = data.nis;
-            document.getElementById('studentClass').textContent = data.class;
-            document.getElementById('teacherName').textContent = data.teacher;
-            document.getElementById('totalScore').textContent = data.totalScore;
-            document.getElementById('statPrestasi').textContent = data.prestasi;
-            document.getElementById('countPrestasi').textContent = data.countPrestasi;
-            document.getElementById('statPelanggaran').textContent = data.pelanggaran;
-            document.getElementById('countPelanggaran').textContent = data.countPelanggaran;
+            const selectedId = document.getElementById('childSelector').value;
+
+            const url = new URL(window.location.href);
+
+            url.searchParams.set('siswa_id', selectedId);
+
+            window.location.href = url.toString();
         }
 
         // Filter riwayat (All, Prestasi, Pelanggaran)

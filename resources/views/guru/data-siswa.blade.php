@@ -6,577 +6,623 @@
 
 @section('content')
 
-  <!-- 1. Navigasi Tingkat Kelas (1-6) -->
-  <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-    <button onclick="selectGrade('all', this)" class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 text-white shadow-sm transition">
-      Semua Kelas
+<!-- Navigasi Tingkat Kelas -->
+<div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+    <button type="button" onclick="selectGrade('all', this)" class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 text-white shadow-sm transition">
+        Semua Kelas
     </button>
-    <button onclick="selectGrade('1', this)" class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm transition">
-      Kelas 1
-    </button>
-    <button onclick="selectGrade('2', this)" class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm transition">
-      Kelas 2
-    </button>
-    <button onclick="selectGrade('3', this)" class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm transition">
-      Kelas 3
-    </button>
-    <button onclick="selectGrade('4', this)" class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm transition">
-      Kelas 4
-    </button>
-    <button onclick="selectGrade('5', this)" class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm transition">
-      Kelas 5
-    </button>
-    <button onclick="selectGrade('6', this)" class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm transition">
-      Kelas 6
-    </button>
-  </div>
+    @for($i = 1; $i <= 6; $i++)
+        <button type="button" onclick="selectGrade('{{ $i }}', this)" class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm transition">
+            Kelas {{ $i }}
+        </button>
+    @endfor
+</div>
 
-  <!-- 2. Section Tombol Aksi (Tengah) -->
-  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-3.5 rounded-2xl border border-amber-100 shadow-sm gap-3">
+<!-- Aksi -->
+<div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-3.5 rounded-2xl border border-amber-100 shadow-sm gap-3">
     <div class="flex items-center gap-2 text-xs font-medium text-gray-600">
-      <i class="fa-solid fa-sliders text-amber-500"></i>
-      <span>Pengaturan & Aksi Periodik:</span>
+        <i class="fa-solid fa-sliders text-amber-500"></i>
+        <span>Pengaturan & Aksi Periodik:</span>
     </div>
     <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-      <!-- Tombol Reset Poin Semester -->
-      <button onclick="openResetSemesterModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-sm">
-        <i class="fa-solid fa-arrows-rotate text-xs"></i> Reset Poin Semester (250)
-      </button>
-
-      <!-- Tombol Kenaikan Kelas -->
-      <a href="{{ route('guru.naik-kelas') }}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-sm">
-        <i class="fa-solid fa-angles-up text-xs"></i> Kenaikan Kelas & Pemindahan
-      </a>
-
-      <!-- Kelola Ruangan -->
-      <button onclick="openClassListModal()" class="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300/80 rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-sm">
-        <i class="fa-solid fa-list-check text-xs"></i> Kelola Ruangan Kelas
-      </button>
+        <button type="button" onclick="openResetSemesterModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-sm">
+            <i class="fa-solid fa-arrows-rotate text-xs"></i>
+            Reset Poin Semester → 250
+        </button>
+        <a href="{{ route('guru.naik-kelas') }}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-sm">
+            <i class="fa-solid fa-angles-up text-xs"></i>
+            Kenaikan Kelas & Pemindahan
+        </a>
+        <button type="button" onclick="openClassListModal()" class="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300/80 rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-sm">
+            <i class="fa-solid fa-list-check text-xs"></i>
+            Kelola Ruangan Kelas
+        </button>
     </div>
-  </div>
+</div>
 
-  <!-- 3. Pencarian -->
-  <div class="bg-white p-4 rounded-2xl border border-amber-100 shadow-sm flex items-center">
+<!-- Pencarian -->
+<div class="mt-4 bg-white p-4 rounded-2xl border border-amber-100 shadow-sm flex items-center">
     <div class="relative w-full sm:w-80">
-      <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-      <input type="text" id="searchInput" onkeyup="searchStudent()" placeholder="Cari NISN atau Nama Siswa..." class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+        <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Cari NISN atau Nama Siswa..." class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition">
     </div>
-  </div>
+</div>
 
-  <!-- Container Tabel & Sub-Filter Rombel -->
-  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-
+<!-- Tabel Siswa -->
+<div class="mt-4 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-3">
-      <div class="flex items-center gap-2 overflow-x-auto" id="subClassContainer">
-        <span class="text-xs font-medium text-gray-400 mr-1 shrink-0">Pilih Rombel:</span>
-      </div>
+        <div class="flex items-center gap-2 overflow-x-auto" id="subClassContainer">
+            <span class="text-xs font-medium text-gray-400 mr-1 shrink-0">Pilih Rombel:</span>
+        </div>
 
-      <button onclick="openModal('add')" class="shrink-0 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition">
-        <i class="fa-solid fa-plus text-sm"></i> Tambah Siswa Baru
-      </button>
+        <button type="button" onclick="openModal('add')" class="shrink-0 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition">
+            <i class="fa-solid fa-plus text-sm"></i>
+            Tambah Siswa Baru
+        </button>
     </div>
 
-    <!-- Table Data Siswa -->
     <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse text-sm" id="studentTable">
-        <thead>
-          <tr class="border-b border-gray-100 text-gray-400 text-xs uppercase font-medium">
-            <th class="py-3 px-4">NISN</th>
-            <th class="py-3 px-4">Nama Siswa</th>
-            <th class="py-3 px-4">Kelas</th>
-            <th class="py-3 px-4">Jenis Kelamin</th>
-            <th class="py-3 px-4 text-center">Total Poin</th>
-            <th class="py-3 px-4 text-center">Aksi</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-50">
-          <tr class="hover:bg-gray-50/50" data-tingkat="1" data-kelas="1-A">
-            <td class="py-3.5 px-4 font-mono text-xs text-gray-500">0012345601</td>
-            <td class="py-3.5 px-4 font-semibold text-gray-700">Ahmad Ibrahim</td>
-            <td class="py-3.5 px-4"><span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">1-A</span></td>
-            <td class="py-3.5 px-4 text-gray-600">Laki-laki</td>
-            <td class="py-3.5 px-4 font-bold text-emerald-600 text-center">260</td>
-            <td class="py-3.5 px-4 text-center">
-              <div class="flex items-center justify-center gap-2">
-                <button onclick="openModal('edit', '0012345601', 'Ahmad Ibrahim', '1-A', 'Laki-laki', 260)" class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
-                <button onclick="deleteStudent(this)" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition"><i class="fa-solid fa-trash text-xs"></i></button>
-              </div>
-            </td>
-          </tr>
-          <tr class="hover:bg-gray-50/50" data-tingkat="4" data-kelas="4-A">
-            <td class="py-3.5 px-4 font-mono text-xs text-gray-500">0012345602</td>
-            <td class="py-3.5 px-4 font-semibold text-gray-700">Siti Maryam</td>
-            <td class="py-3.5 px-4"><span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">4-A</span></td>
-            <td class="py-3.5 px-4 text-gray-600">Perempuan</td>
-            <td class="py-3.5 px-4 font-bold text-emerald-600 text-center">255</td>
-            <td class="py-3.5 px-4 text-center">
-              <div class="flex items-center justify-center gap-2">
-                <button onclick="openModal('edit', '0012345602', 'Siti Maryam', '4-A', 'Perempuan', 255)" class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
-                <button onclick="deleteStudent(this)" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition"><i class="fa-solid fa-trash text-xs"></i></button>
-              </div>
-            </td>
-          </tr>
-          <tr class="hover:bg-gray-50/50" data-tingkat="4" data-kelas="4-B">
-            <td class="py-3.5 px-4 font-mono text-xs text-gray-500">0012345603</td>
-            <td class="py-3.5 px-4 font-semibold text-gray-700">Muhammad Hasan</td>
-            <td class="py-3.5 px-4"><span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">4-B</span></td>
-            <td class="py-3.5 px-4 text-gray-600">Laki-laki</td>
-            <td class="py-3.5 px-4 font-bold text-emerald-600 text-center">270</td>
-            <td class="py-3.5 px-4 text-center">
-              <div class="flex items-center justify-center gap-2">
-                <button onclick="openModal('edit', '0012345603', 'Muhammad Hasan', '4-B', 'Laki-laki', 270)" class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
-                <button onclick="deleteStudent(this)" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition"><i class="fa-solid fa-trash text-xs"></i></button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <table class="w-full text-left border-collapse text-sm" id="studentTable">
+            <thead>
+                <tr class="border-b border-gray-100 text-gray-400 text-xs uppercase font-medium">
+                    <th class="py-3 px-4">NISN</th>
+                    <th class="py-3 px-4">Nama Siswa</th>
+                    <th class="py-3 px-4">Kelas</th>
+                    <th class="py-3 px-4">Jenis Kelamin</th>
+                    <th class="py-3 px-4 text-center">Total Poin</th>
+                    <th class="py-3 px-4 text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                @forelse($siswa as $item)
+                    <tr class="hover:bg-gray-50/50"  data-id="{{ $item->id }}" data-tingkat="{{ $item->kelas?->tingkat }}" data-kelas-id="{{ $item->kelas?->id }}" data-kelas="{{ $item->kelas?->nama_kelas }}">
+                        <td class="py-3.5 px-4 font-mono text-xs text-gray-500">{{ $item->nisn }}</td>
+                        <td class="py-3.5 px-4 font-semibold text-gray-700">{{ $item->nama_lengkap }}</td>
+                        <td class="py-3.5 px-4">
+                            <span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">
+                                {{ $item->kelas?->nama_kelas ?? '-' }}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-4 text-gray-600">{{ $item->jenis_kelamin }}</td>
+                        <td class="py-3.5 px-4 font-bold text-emerald-600 text-center">{{ $item->poin_saat_ini }}</td>
+                        <td class="py-3.5 px-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                               <button
+                                  type="button"
+                                  onclick='openModal(
+                                      "edit",
+                                      @json($item->nisn),
+                                      @json($item->nama_lengkap),
+                                      @json($item->kelas?->id),
+                                      @json($item->jenis_kelamin),
+                                      @json($item->poin_saat_ini),
+                                      @json($item->id)
+                                  )'
+                                  class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition"
+                              >
+                                  <i class="fa-solid fa-pen-to-square text-xs"></i>
+                              </button>
+                                <button type="button" onclick="deleteStudent('{{ $item->id }}')" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition">
+                                    <i class="fa-solid fa-trash text-xs"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-gray-400">Belum ada data siswa.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
-  </div>
+</div>
 
-  <!-- Modal Kelola Ruangan Kelas -->
-  <div id="classListModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden transform transition-all">
-      <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4 text-white flex justify-between items-center">
-        <div>
-          <h3 class="font-bold text-base">Kelola Ruangan Kelas</h3>
-          <p class="text-[11px] text-amber-100">Daftar ruangan kelas dan opsi penambahan/penghapusan</p>
+<!-- Modal Kelola Kelas -->
+<div id="classListModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden">
+        <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4 text-white flex justify-between items-center">
+            <div>
+                <h3 class="font-bold text-base">Kelola Ruangan Kelas</h3>
+                <p class="text-[11px] text-amber-100">Daftar ruangan kelas</p>
+            </div>
+            <button type="button" onclick="closeClassListModal()" class="text-white/80 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
-        <button onclick="closeClassListModal()" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
-      </div>
 
-      <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto" id="classListContent"></div>
+        <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto" id="classListContent"></div>
 
-      <div class="p-4 bg-gray-50 border-t flex justify-between items-center">
-        <button onclick="promptAddNewRoom()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition shadow-sm">
-          <i class="fa-solid fa-plus"></i> Tambah Ruangan Baru
-        </button>
-        <button onclick="closeClassListModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-xs font-medium transition">Tutup</button>
-      </div>
+        <div class="p-4 bg-gray-50 border-t flex justify-between items-center">
+            <button type="button" onclick="promptAddNewRoom()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition shadow-sm">
+                <i class="fa-solid fa-plus"></i>
+                Tambah Ruangan Baru
+            </button>
+            <button type="button" onclick="closeClassListModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-xs font-medium transition">
+                Tutup
+            </button>
+        </div>
     </div>
-  </div>
+</div>
 
-  <!-- Modal Pop-up (Tambah / Edit Siswa) -->
-  <div id="studentModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden transform transition-all">
-      <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4 text-white flex justify-between items-center">
-        <h3 id="modalTitle" class="font-bold text-base">Tambah Siswa Baru</h3>
-        <button onclick="closeModal()" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-
-      <form id="studentForm" onsubmit="saveStudent(event)" class="p-6 space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">NISN</label>
-          <input type="text" id="inputNisn" required placeholder="0012345678" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
+<!-- Modal Tambah / Edit Siswa -->
+<div id="studentModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden">
+        <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4 text-white flex justify-between items-center">
+            <h3 id="modalTitle" class="font-bold text-base">Tambah Siswa Baru</h3>
+            <button type="button" onclick="closeModal()" class="text-white/80 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Lengkap Siswa</label>
-          <input type="text" id="inputNama" required placeholder="Contoh: Bilal Bin Rabah" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
-        </div>
+        <!-- Mengarah ke rute guru.data-siswa.store -->
+        <form id="studentForm" action="{{ route('guru.data-siswa.store') }}" method="POST" class="p-6 space-y-4">
+            @csrf
+            <input type="hidden" name="_method" id="formMethod" value="POST">
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-gray-700 mb-1">Kelas</label>
-            <select id="selectKelas" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500"></select>
-          </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">NISN</label>
+                <input type="text" name="nisn" id="inputNisn" required placeholder="0012345678" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
+            </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-gray-700 mb-1">Jenis Kelamin</label>
-            <select id="selectGender" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
-              <option value="Laki-laki">Laki-laki</option>
-              <option value="Perempuan">Perempuan</option>
-            </select>
-          </div>
-        </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Lengkap Siswa</label>
+                <input type="text" name="nama_lengkap" id="inputNama" required placeholder="Contoh: Bilal Bin Rabah" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
+            </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Poin Awal Siswa</label>
-          <div class="relative">
-            <input type="number" id="inputPoin" required value="250" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs font-bold text-emerald-600 focus:outline-none focus:border-amber-500">
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-gray-400">Poin Default</span>
-          </div>
-          <p class="text-[10px] text-gray-400 mt-1">*Poin standar siswa baru saat pendaftaran adalah 250.</p>
-        </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Kelas</label>
+                    <select id="selectKelas" name="kelas_id" required class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
+                        @foreach($kelas as $item)
+                            <option value="{{ $item->id }}" data-tingkat="{{ $item->tingkat }}">
+                                {{ $item->nama_kelas }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-        <div class="flex justify-end gap-2 pt-4 border-t">
-          <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-200 transition">Batal</button>
-          <button type="submit" class="px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-medium hover:bg-amber-600 transition">Simpan</button>
-        </div>
-      </form>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Jenis Kelamin</label>
+                    <select id="selectGender" name="jenis_kelamin" required class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Poin Awal Siswa</label>
+                <div class="relative">
+                    <input type="number" name="poin_saat_ini" id="inputPoin" required min="0" value="250" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs font-bold text-emerald-600 focus:outline-none focus:border-amber-500">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-gray-400">Poin Default</span>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-1">*Poin standar siswa baru adalah 250.</p>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-4 border-t">
+                <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-200 transition">
+                    Batal
+                </button>
+                <button type="submit" class="px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-medium hover:bg-amber-600 transition">
+                    Simpan
+                </button>
+            </div>
+        </form>
     </div>
-  </div>
+</div>
 
-  <!-- Modal Reset Poin Semester -->
-  <div id="resetSemesterModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden transform transition-all">
-      <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 text-white flex justify-between items-center">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-            <i class="fa-solid fa-arrows-rotate text-sm"></i>
-          </div>
-          <div>
-            <h3 class="font-bold text-base leading-tight">Reset Poin Kenaikan Semester</h3>
-            <p class="text-[11px] text-blue-100">Kembalikan saldo poin siswa ke 250 Poin</p>
-          </div>
-        </div>
-        <button onclick="closeResetSemesterModal()" class="text-white/80 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-
-      <div class="p-6 space-y-4">
-        <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 space-y-1">
-          <p class="font-bold flex items-center gap-1.5 text-blue-800">
-            <i class="fa-solid fa-circle-info"></i> Ketentuan Reset Semester:
-          </p>
-          <ul class="list-disc list-inside space-y-0.5 text-[11px] text-blue-700 pl-1">
-            <li>Ruangan & kelas siswa <strong>TIDAK BERUBAH</strong>.</li>
-            <li>Seluruh poin siswa target akan di-reset kembali ke <strong>250 Poin</strong>.</li>
-          </ul>
+<!-- Modal Reset Poin -->
+<div id="resetSemesterModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 text-white flex justify-between items-center">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                    <i class="fa-solid fa-arrows-rotate text-sm"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-base leading-tight">Reset Poin Kenaikan Semester</h3>
+                    <p class="text-[11px] text-blue-100">Kembalikan saldo poin siswa ke 250 Poin</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeResetSemesterModal()" class="text-white/80 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-gray-700 mb-1">Target Siswa yang di-Reset</label>
-          <select id="resetTargetScope" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-500">
-            <option value="all">Semua Siswa (Seluruh Kelas 1 - 6)</option>
-            <option value="current">Hanya Siswa di Tampilan/Filter Saat Ini</option>
-          </select>
+        <div class="p-6 space-y-4">
+            <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 space-y-1">
+                <p class="font-bold flex items-center gap-1.5 text-blue-800">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Ketentuan Reset Semester:
+                </p>
+                <ul class="list-disc list-inside space-y-0.5 text-[11px] text-blue-700 pl-1">
+                    <li>Ruangan & kelas siswa <strong>TIDAK BERUBAH</strong>.</li>
+                    <li>Seluruh poin target akan di-reset menjadi <strong>250 Poin</strong>.</li>
+                </ul>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Target Siswa</label>
+                <select id="resetTargetScope" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-blue-500">
+                    <option value="all">Semua Siswa (Seluruh Kelas 1 - 6)</option>
+                    <option value="current">Hanya Siswa di Tampilan/Filter Saat Ini</option>
+                </select>
+            </div>
+
+            <div class="pt-2 border-t">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">
+                    Ketik <span class="text-rose-600 font-bold">RESET</span> untuk mengonfirmasi:
+                </label>
+                <input type="text" id="confirmResetInput" placeholder="Ketik RESET di sini..." class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-blue-500 font-bold tracking-widest text-gray-700">
+            </div>
         </div>
 
-        <div class="pt-2 border-t">
-          <label class="block text-xs font-semibold text-gray-700 mb-1">
-            Ketik <span class="text-rose-600 font-bold select-all">RESET</span> untuk mengonfirmasi:
-          </label>
-          <input type="text" id="confirmResetInput" placeholder="Ketik RESET di sini..." class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-blue-500 font-bold tracking-widest text-gray-700">
+        <div class="p-4 bg-gray-50 border-t flex justify-end gap-2">
+            <button type="button" onclick="closeResetSemesterModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-xs font-medium transition">
+                Batal
+            </button>
+            <button type="button" onclick="executeResetSemester()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-check-double"></i>
+                Jalankan Reset Poin
+            </button>
         </div>
-      </div>
-
-      <div class="p-4 bg-gray-50 border-t flex justify-end gap-2">
-        <button onclick="closeResetSemesterModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-xs font-medium transition">
-          Batal
-        </button>
-        <button onclick="executeResetSemester()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-          <i class="fa-solid fa-check-double"></i> Jalankan Reset Poin
-        </button>
-      </div>
     </div>
-  </div>
+</div>
 
 @endsection
 
 @push('scripts')
+@php
+    $kelasData = $kelas->map(function($item) {
+        return [
+            'id' => $item->id,
+            'tingkat' => (string) $item->tingkat,
+            'nama_kelas' => $item->nama_kelas,
+        ];
+    })->values();
+@endphp
+
 <script>
-  function openResetSemesterModal() {
-    document.getElementById('confirmResetInput').value = '';
-    const modal = document.getElementById('resetSemesterModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-  }
+const kelasDatabase = @json($kelasData);
 
-  function closeResetSemesterModal() {
-    const modal = document.getElementById('resetSemesterModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-  }
+let activeGrade = 'all';
+let activeSubClass = 'all';
 
-  function executeResetSemester() {
-    const inputConfirm = document.getElementById('confirmResetInput').value.trim();
-    const targetScope = document.getElementById('resetTargetScope').value;
-
-    if (inputConfirm !== 'RESET') {
-      alert('Kata konfirmasi salah! Silakan ketik RESET dengan huruf kapital.');
-      return;
-    }
-
-    const rows = document.querySelectorAll('#studentTable tbody tr');
-    let resetCount = 0;
-
-    rows.forEach(row => {
-      if (targetScope === 'all' || row.style.display !== 'none') {
-        row.cells[4].textContent = '250';
-        resetCount++;
-      }
-    });
-
-    closeResetSemesterModal();
-    alert(`Berhasil! Poin sebanyak ${resetCount} siswa telah di-reset kembali ke 250 Poin untuk Semester Baru.`);
-  }
-
-  let activeGrade = 'all';
-  let activeSubClass = 'all';
-
-  const classStructure = {
-    '1': ['A', 'B'],
-    '2': ['A', 'B'],
-    '3': ['A', 'B'],
-    '4': ['A', 'B'],
-    '5': ['A', 'B', 'C'],
-    '6': ['A', 'B', 'C']
-  };
-
-  document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
     renderSubClasses('all');
-    updateSelectKelasOptions();
     applyFilters();
-  });
+});
 
-  function selectGrade(grade, btn) {
-    activeGrade = grade;
+function selectGrade(grade, btn) {
+    activeGrade = String(grade);
     activeSubClass = 'all';
 
-    document.querySelectorAll('.grade-btn').forEach(b => {
-      b.className = 'grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm transition';
+    document.querySelectorAll('.grade-btn').forEach(function(button) {
+        button.className = 'grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm transition';
     });
+
     btn.className = 'grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 text-white shadow-sm transition';
 
-    renderSubClasses(grade);
+    renderSubClasses(activeGrade);
     applyFilters();
-  }
+}
 
-  function renderSubClasses(grade) {
+function renderSubClasses(grade) {
     const container = document.getElementById('subClassContainer');
-    container.innerHTML = '<span class="text-xs font-medium text-gray-400 mr-1 shrink-0">Pilih Rombel:</span>';
+    if (!container) return;
 
-    if (grade === 'all') {
-      const button = document.createElement('button');
-      button.textContent = 'Semua Kelas';
-      button.className = 'sub-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 transition shrink-0';
-      container.appendChild(button);
-      return;
-    }
+    container.innerHTML = `<span class="text-xs font-medium text-gray-400 mr-1 shrink-0">Pilih Rombel:</span>`;
 
     const allBtn = document.createElement('button');
-    allBtn.onclick = () => selectSubClass('all', allBtn);
-    allBtn.textContent = `Semua (${grade})`;
-    allBtn.className = `sub-btn px-3 py-1.5 rounded-lg text-xs font-medium transition shrink-0 ${activeSubClass === 'all' ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`;
+    allBtn.type = 'button';
+    allBtn.textContent = grade === 'all' ? 'Semua Kelas' : `Semua (${grade})`;
+    allBtn.className = 'sub-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 transition shrink-0';
+    allBtn.onclick = function() { selectSubClass('all', allBtn); };
     container.appendChild(allBtn);
 
-    const currentList = classStructure[grade] || [];
-    currentList.forEach(letter => {
-      const classVal = `${grade}-${letter}`;
-      const button = document.createElement('button');
-      button.onclick = () => selectSubClass(classVal, button);
-      button.textContent = classVal;
-      button.className = `sub-btn px-3 py-1.5 rounded-lg text-xs font-medium transition shrink-0 ${activeSubClass === classVal ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'}`;
-      container.appendChild(button);
+    if (grade === 'all') return;
+
+    const filteredClasses = kelasDatabase.filter(function(item) {
+        return String(item.tingkat) === String(grade);
     });
-  }
 
-  function openClassListModal() {
-    renderClassListModal();
-    const modal = document.getElementById('classListModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-  }
-
-  function closeClassListModal() {
-    const modal = document.getElementById('classListModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-  }
-
-  function renderClassListModal() {
-    const content = document.getElementById('classListContent');
-    content.innerHTML = '';
-
-    Object.keys(classStructure).forEach(g => {
-      const section = document.createElement('div');
-      section.className = 'border-b border-gray-100 pb-3 last:border-0';
-
-      const title = document.createElement('h4');
-      title.className = 'text-xs font-bold text-amber-600 uppercase tracking-wider mb-2';
-      title.textContent = `Tingkat Kelas ${g}`;
-      section.appendChild(title);
-
-      const grid = document.createElement('div');
-      grid.className = 'flex flex-wrap gap-2';
-
-      const list = classStructure[g] || [];
-      if (list.length === 0) {
-        grid.innerHTML = '<span class="text-xs text-gray-400 italic">Belum ada ruangan</span>';
-      } else {
-        list.forEach((letter) => {
-          const chip = document.createElement('div');
-          chip.className = 'flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200/60 text-amber-900 rounded-xl text-xs font-medium shadow-sm';
-          chip.innerHTML = `
-            <span>Kelas ${g}-${letter}</span>
-            <button onclick="removeClass('${g}', '${letter}')" class="text-rose-500 hover:text-rose-700 ml-1 transition" title="Hapus Kelas ${g}-${letter}">
-              <i class="fa-solid fa-trash-can text-xs"></i>
-            </button>
-          `;
-          grid.appendChild(chip);
-        });
-      }
-
-      section.appendChild(grid);
-      content.appendChild(section);
+    filteredClasses.forEach(function(item) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = item.nama_kelas;
+        button.className = 'sub-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 hover:bg-gray-100 transition shrink-0';
+        button.onclick = function() { selectSubClass(String(item.id), button); };
+        button.dataset.kelasId = item.id;
+        container.appendChild(button);
     });
-  }
+}
 
-  function removeClass(grade, letter) {
-    if (confirm(`Apakah Anda yakin ingin menghapus ruangan Kelas ${grade}-${letter}?`)) {
-      classStructure[grade] = classStructure[grade].filter(item => item !== letter);
-      renderClassListModal();
-      renderSubClasses(activeGrade);
-      updateSelectKelasOptions();
-    }
-  }
+function selectSubClass(subClass, btn) {
+    activeSubClass = String(subClass);
 
-  function promptAddNewRoom() {
-    const targetGrade = prompt('Masukkan Tingkat Kelas (1-6):', activeGrade !== 'all' ? activeGrade : '1');
-    if (!targetGrade || !classStructure[targetGrade]) {
-      if (targetGrade) alert('Tingkat kelas tidak valid!');
-      return;
-    }
-
-    const defaultLetter = String.fromCharCode(65 + (classStructure[targetGrade]?.length || 0));
-    const roomLetter = prompt(`Masukkan nama rombel/ruangan baru untuk Kelas ${targetGrade} (misal: C):`, defaultLetter);
-
-    if (roomLetter && roomLetter.trim() !== '') {
-      const cleanLetter = roomLetter.trim().toUpperCase();
-      if (!classStructure[targetGrade].includes(cleanLetter)) {
-        classStructure[targetGrade].push(cleanLetter);
-        renderClassListModal();
-        renderSubClasses(activeGrade);
-        updateSelectKelasOptions();
-        alert(`Ruangan Kelas ${targetGrade}-${cleanLetter} berhasil ditambahkan!`);
-      } else {
-        alert(`Ruangan Kelas ${targetGrade}-${cleanLetter} sudah ada!`);
-      }
-    }
-  }
-
-  function updateSelectKelasOptions() {
-    const select = document.getElementById('selectKelas');
-    select.innerHTML = '';
-
-    Object.keys(classStructure).forEach(g => {
-      classStructure[g].forEach(letter => {
-        const val = `${g}-${letter}`;
-        const option = document.createElement('option');
-        option.value = val;
-        option.textContent = val;
-        select.appendChild(option);
-      });
+    document.querySelectorAll('.sub-btn').forEach(function(button) {
+        button.className = 'sub-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 hover:bg-gray-100 transition shrink-0';
     });
-  }
 
-  function selectSubClass(subClass, btn) {
-    activeSubClass = subClass;
-
-    document.querySelectorAll('.sub-btn').forEach(b => {
-      b.className = 'sub-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 hover:bg-gray-100 transition shrink-0';
-    });
     btn.className = 'sub-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 transition shrink-0';
-
     applyFilters();
-  }
+}
 
-  function applyFilters() {
-    const search = document.getElementById('searchInput').value.toLowerCase();
+function applyFilters() {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+
+    const search = searchInput.value.toLowerCase().trim();
     const rows = document.querySelectorAll('#studentTable tbody tr');
 
-    rows.forEach(row => {
-      const nisn = row.cells[0].textContent.toLowerCase();
-      const nama = row.cells[1].textContent.toLowerCase();
-      const rowGrade = row.getAttribute('data-tingkat');
-      const rowClass = row.getAttribute('data-kelas');
+    rows.forEach(function(row) {
+        if (!row.cells || row.cells.length < 6) return;
 
-      const matchGrade = (activeGrade === 'all' || rowGrade === activeGrade);
-      const matchSubClass = (activeSubClass === 'all' || rowClass === activeSubClass);
-      const matchSearch = (nisn.includes(search) || nama.includes(search));
+        const nisn = row.cells[0].textContent.toLowerCase();
+        const nama = row.cells[1].textContent.toLowerCase();
+        const rowGrade = row.dataset.tingkat;
+        const rowClassId = row.dataset.kelasId;
 
-      if (matchGrade && matchSubClass && matchSearch) {
-        row.style.display = '';
-      } else {
-        row.style.display = 'none';
-      }
+        const matchGrade = activeGrade === 'all' || String(rowGrade) === String(activeGrade);
+        const matchSubClass = activeSubClass === 'all' || String(rowClassId) === String(activeSubClass);
+        const matchSearch = nisn.includes(search) || nama.includes(search);
+
+        row.style.display = matchGrade && matchSubClass && matchSearch ? '' : 'none';
     });
-  }
+}
 
-  function searchStudent() {
-    applyFilters();
-  }
-
-  function openModal(mode, nisn = '', nama = '', kelas = '', gender = 'Laki-laki', poin = 250) {
+function openModal(mode, nisn = '', nama = '', kelasId = '', gender = 'Laki-laki', poin = 250, studentId = '') {
     const modal = document.getElementById('studentModal');
     const title = document.getElementById('modalTitle');
+    const form = document.getElementById('studentForm');
+    const formMethod = document.getElementById('formMethod');
+
+    if (!modal || !form) return;
+
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 
-    updateSelectKelasOptions();
-
     if (mode === 'add') {
-      title.textContent = 'Tambah Siswa Baru';
-      document.getElementById('inputNisn').value = '';
-      document.getElementById('inputNama').value = '';
-      document.getElementById('selectGender').value = 'Laki-laki';
-      document.getElementById('inputPoin').value = '250';
+        title.textContent = 'Tambah Siswa Baru';
 
-      let defaultClass = '1-A';
-      if (activeSubClass !== 'all') {
-        defaultClass = activeSubClass;
-      } else if (activeGrade !== 'all') {
-        const firstLetter = classStructure[activeGrade]?.[0] || 'A';
-        defaultClass = `${activeGrade}-${firstLetter}`;
-      }
-      document.getElementById('selectKelas').value = defaultClass;
+        form.reset();
 
-    } else {
-      title.textContent = 'Edit Data Siswa';
-      document.getElementById('inputNisn').value = nisn;
-      document.getElementById('inputNama').value = nama;
-      document.getElementById('selectKelas').value = kelas;
-      document.getElementById('selectGender').value = gender;
-      document.getElementById('inputPoin').value = poin;
+        form.action = "{{ route('guru.data-siswa.store') }}";
+        formMethod.value = 'POST';
+
+        document.getElementById('inputPoin').value = 250;
+
+        if (activeSubClass !== 'all') {
+            document.getElementById('selectKelas').value = activeSubClass;
+        } else if (activeGrade !== 'all') {
+            const firstClass = kelasDatabase.find(function(item) {
+                return String(item.tingkat) === String(activeGrade);
+            });
+
+            if (firstClass) {
+                document.getElementById('selectKelas').value = firstClass.id;
+            }
+        }
+
+    } else if (mode === 'edit') {
+        title.textContent = 'Edit Data Siswa';
+
+        form.action = "{{ url('/guru/data-siswa') }}/" + studentId;
+        formMethod.value = 'PUT';
+
+        document.getElementById('inputNisn').value = nisn;
+        document.getElementById('inputNama').value = nama;
+        document.getElementById('selectKelas').value = kelasId;
+        document.getElementById('selectGender').value = gender;
+        document.getElementById('inputPoin').value = poin;
     }
-  }
+}
 
-  function closeModal() {
+function closeModal() {
     const modal = document.getElementById('studentModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-  }
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
 
-  function saveStudent(e) {
-    e.preventDefault();
-    const nisn = document.getElementById('inputNisn').value;
-    const nama = document.getElementById('inputNama').value;
-    const kelas = document.getElementById('selectKelas').value;
-    const gender = document.getElementById('selectGender').value;
-    const poin = document.getElementById('inputPoin').value;
-    const tingkat = kelas.split('-')[0];
+function deleteStudent(id) {
+    if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        // Mengarah ke URL /guru/data-siswa/{id} sesuai file web.php
+        form.action = `/guru/data-siswa/${id}`;
 
-    const tbody = document.querySelector('#studentTable tbody');
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
 
-    const newRow = document.createElement('tr');
-    newRow.className = "hover:bg-gray-50/50";
-    newRow.setAttribute('data-tingkat', tingkat);
-    newRow.setAttribute('data-kelas', kelas);
+        form.innerHTML = `
+            <input type="hidden" name="_token" value="${csrfToken}">
+            <input type="hidden" name="_method" value="DELETE">
+        `;
 
-    newRow.innerHTML = `
-      <td class="py-3.5 px-4 font-mono text-xs text-gray-500">${nisn}</td>
-      <td class="py-3.5 px-4 font-semibold text-gray-700">${nama}</td>
-      <td class="py-3.5 px-4"><span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">${kelas}</span></td>
-      <td class="py-3.5 px-4 text-gray-600">${gender}</td>
-      <td class="py-3.5 px-4 font-bold text-emerald-600 text-center">${poin}</td>
-      <td class="py-3.5 px-4 text-center">
-        <div class="flex items-center justify-center gap-2">
-          <button onclick="openModal('edit', '${nisn}', '${nama}', '${kelas}', '${gender}', ${poin})" class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
-          <button onclick="deleteStudent(this)" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition"><i class="fa-solid fa-trash text-xs"></i></button>
-        </div>
-      </td>
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function openResetSemesterModal() {
+    document.getElementById('confirmResetInput').value = '';
+    const modal = document.getElementById('resetSemesterModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+}
+
+function closeResetSemesterModal() {
+    const modal = document.getElementById('resetSemesterModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+function executeResetSemester() {
+    const confirmation = document.getElementById('confirmResetInput').value.trim();
+
+    if (confirmation !== 'RESET') {
+        alert('Kata konfirmasi salah! Silakan ketik RESET dengan huruf kapital.');
+        return;
+    }
+
+    const scope = document.getElementById('resetTargetScope').value;
+
+    let ids = [];
+
+    // Jika memilih siswa pada tampilan/filter saat ini
+    if (scope === 'current') {
+        const rows = document.querySelectorAll('#studentTable tbody tr');
+
+        rows.forEach(function(row) {
+            if (row.style.display !== 'none' && row.dataset.id) {
+                ids.push(row.dataset.id);
+            }
+        });
+
+        if (ids.length === 0) {
+            alert('Tidak ada siswa yang ditemukan pada tampilan/filter saat ini.');
+            return;
+        }
+    }
+
+    if (scope === 'all') {
+        const yakin = confirm(
+            'PERINGATAN!\n\n' +
+            'Poin SELURUH siswa aktif akan direset menjadi 250.\n\n' +
+            'Apakah Anda yakin ingin melanjutkan?'
+        );
+
+        if (!yakin) {
+            return;
+        }
+    }
+
+    const form = document.createElement('form');
+
+    form.method = 'POST';
+    form.action = "{{ route('guru.data-siswa.reset-poin') }}";
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+        || '{{ csrf_token() }}';
+
+    form.innerHTML = `
+        <input type="hidden" name="_token" value="${csrfToken}">
+        <input type="hidden" name="scope" value="${scope}">
     `;
 
-    tbody.prepend(newRow);
-    applyFilters();
-    alert(`Siswa ${nama} berhasil disimpan!`);
-    closeModal();
-  }
+    ids.forEach(function(id) {
+        const input = document.createElement('input');
 
-  function deleteStudent(button) {
-    if (confirm('Hapus data siswa ini?')) {
-      button.closest('tr')?.remove();
+        input.type = 'hidden';
+        input.name = 'ids[]';
+        input.value = id;
+
+        form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function openClassListModal() {
+    renderClassListModal();
+    const modal = document.getElementById('classListModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
     }
-  }
+}
+
+function closeClassListModal() {
+    const modal = document.getElementById('classListModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+function renderClassListModal() {
+    const content = document.getElementById('classListContent');
+    if (!content) return;
+    content.innerHTML = '';
+
+    for (let grade = 1; grade <= 6; grade++) {
+        const section = document.createElement('div');
+        section.className = 'border-b border-gray-100 pb-3 last:border-0';
+        section.innerHTML = `
+            <h4 class="text-xs font-bold text-amber-600 uppercase tracking-wider mb-2">
+                Tingkat Kelas ${grade}
+            </h4>
+            <div class="flex flex-wrap gap-2" id="class-list-${grade}"></div>
+        `;
+        content.appendChild(section);
+
+        const grid = document.getElementById(`class-list-${grade}`);
+        const classes = kelasDatabase.filter(function(item) {
+            return String(item.tingkat) === String(grade);
+        });
+
+        if (classes.length === 0) {
+            grid.innerHTML = '<span class="text-xs text-gray-400 italic">Belum ada ruangan</span>';
+            continue;
+        }
+
+        classes.forEach(function(item) {
+            const chip = document.createElement('div');
+            chip.className = 'flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200/60 text-amber-900 rounded-xl text-xs font-medium shadow-sm';
+            chip.innerHTML = `<span>${item.nama_kelas}</span>`;
+            grid.appendChild(chip);
+        });
+    }
+}
+
+function promptAddNewRoom() {
+    const tingkat = prompt(
+        'Masukkan tingkat kelas (1-6):'
+    );
+
+    if (tingkat === null) {
+        return;
+    }
+
+    const tingkatNumber = parseInt(tingkat);
+
+    if (isNaN(tingkatNumber) || tingkatNumber < 1 || tingkatNumber > 6) {
+        alert('Tingkat kelas harus berupa angka 1 sampai 6.');
+        return;
+    }
+
+    const namaKelas = prompt(
+        'Masukkan nama ruangan kelas:\nContoh: 1A, 1B, 2A, 6B'
+    );
+
+    if (namaKelas === null || namaKelas.trim() === '') {
+        alert('Nama ruangan kelas wajib diisi.');
+        return;
+    }
+
+    const form = document.createElement('form');
+
+    form.method = 'POST';
+    form.action = "{{ route('guru.data-siswa.kelas.store') }}";
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+        || '{{ csrf_token() }}';
+
+    form.innerHTML = `
+        <input type="hidden" name="_token" value="${csrfToken}">
+        <input type="hidden" name="tingkat" value="${tingkatNumber}">
+        <input type="hidden" name="nama_kelas" value="${namaKelas.trim()}">
+    `;
+
+    document.body.appendChild(form);
+    form.submit();
+}
 </script>
 @endpush
