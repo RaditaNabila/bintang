@@ -4,6 +4,31 @@
 @section('page_title','Relasi Wali-Siswa')
 @section('page_description','Hubungkan akun orang tua dengan data siswa untuk akses portal wali')
 
+@push('styles')
+<!-- Tom Select CSS untuk Dropdown Searchable -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+<style>
+    /* Styling penyesuaian Tom Select agar serasi dengan Tailwind */
+    .ts-control {
+        border-radius: 0.75rem !important;
+        padding: 0.625rem 0.75rem !important;
+        border-color: #e5e7eb !important;
+        background-color: rgba(249, 250, 251, 0.5) !important;
+        font-size: 0.75rem !important;
+    }
+    .ts-wrapper.focus .ts-control {
+        border-color: #f59e0b !important;
+        box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
+    }
+    .ts-dropdown {
+        border-radius: 0.75rem !important;
+        font-size: 0.75rem !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+        overflow: hidden !important;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="space-y-6">
 
@@ -61,7 +86,8 @@
                         id="selectWali"
                         name="pengguna_id"
                         required
-                        class="w-full text-xs p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50/50"
+                        placeholder="Ketik nama / username wali..."
+                        autocomplete="off"
                     >
                         <option value="">-- Pilih Akun Wali --</option>
 
@@ -86,7 +112,8 @@
                         id="selectSiswa"
                         name="siswa_id"
                         required
-                        class="w-full text-xs p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50/50"
+                        placeholder="Ketik nama / NISN / kelas siswa..."
+                        autocomplete="off"
                     >
                         <option value="">-- Pilih Siswa --</option>
 
@@ -277,7 +304,30 @@
 @endsection
 
 @push('scripts')
+<!-- Tom Select JS -->
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Inisialisasi Searchable Select untuk Wali Murid
+    new TomSelect('#selectWali', {
+        create: false,
+        sortField: {
+            field: "text",
+            direction: "asc"
+        }
+    });
+
+    // Inisialisasi Searchable Select untuk Siswa
+    new TomSelect('#selectSiswa', {
+        create: false,
+        sortField: {
+            field: "text",
+            direction: "asc"
+        }
+    });
+});
+
 function filterRelations() {
     const input = document.getElementById('relationSearch').value.toLowerCase().trim();
     const rows = document.querySelectorAll('#relationTableBody tr');

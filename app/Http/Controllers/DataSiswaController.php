@@ -9,18 +9,39 @@ use Illuminate\Http\Request;
 class DataSiswaController extends Controller
 {
     /**
-     * Menampilkan data siswa
+     * Menampilkan data siswa dengan Pagination 15 & Filter/Search
      */
-    public function index()
+    public function index(Request $request)
     {
-        $siswa = Siswa::with('kelas')
-            ->where('status', 'aktif')
-            ->orderBy('nama_lengkap', 'asc')
-            ->get();
+        $tingkat = $request->query('tingkat', 'all');
+        $kelasId = $request->query('kelas_id', 'all');
+        $search = $request->query('search', '');
 
-        $kelas = Kelas::orderBy('tingkat')
-            ->orderBy('nama_kelas')
-            ->get();
+        $kelas = Kelas::all();
+
+        $siswaQuery = Siswa::with('kelas');
+
+        // Filter berdasarkan Tingkat Kelas (1, 2, 3, dst.)
+        if ($tingkat !== 'all') {
+            $siswaQuery->whereHas('kelas', function ($q) use ($tingkat) {
+                $q->where('tingkat', $tingkat);
+            });
+        }
+
+        // Filter spesifik Rombel jika kelas_id dipilih
+        if ($kelasId !== 'all') {
+            $siswaQuery->where('kelas_id', $kelasId);
+        }
+
+        // Filter Pencarian NISN / Nama
+        if (!empty($search)) {
+            $siswaQuery->where(function ($q) use ($search) {
+                $q->where('nisn', 'like', "%{$search}%")
+                ->orWhere('nama_lengkap', 'like', "%{$search}%");
+            });
+        }
+
+        $siswa = $siswaQuery->paginate(10)->withQueryString();
 
         return view('guru.data-siswa', compact('siswa', 'kelas'));
     }
@@ -135,34 +156,33 @@ class DataSiswaController extends Controller
             ->with('success', $message);
     }
 
-       /**
-         * Menambahkan ruangan kelas baru
-         */
-        public function storeKelas(Request $request)
-        {
-            $validated = $request->validate([
-                'tingkat' => 'required|integer|min:1|max:6',
-                'nama_kelas' => 'required|string|max:50',
-            ]);
+    /**
+     * Menambahkan ruangan kelas baru
+     */
+    public function storeKelas(Request $request)
+    {
+        $validated = $request->validate([
+            'tingkat' => 'required|integer|min:1|max:6',
+            'nama_kelas' => 'required|string|max:50',
+        ]);
 
-            $cek = Kelas::where('tingkat', $validated['tingkat'])
-                ->where('nama_kelas', $validated['nama_kelas'])
-                ->exists();
+        $cek = Kelas::where('tingkat', $validated['tingkat'])
+            ->where('nama_kelas', $validated['nama_kelas'])
+            ->exists();
 
-            if ($cek) {
-                return redirect()
-                    ->route('guru.data-siswa')
-                    ->with('error', 'Ruangan kelas tersebut sudah ada.');
-            }
-
-            Kelas::create([
-                'tingkat' => $validated['tingkat'],
-                'nama_kelas' => $validated['nama_kelas'],
-            ]);
-
+        if ($cek) {
             return redirect()
                 ->route('guru.data-siswa')
-                ->with('success', 'Ruangan kelas berhasil ditambahkan.');
+                ->with('error', 'Ruangan kelas tersebut sudah ada.');
         }
 
+        Kelas::create([
+            'tingkat' => $validated['tingkat'],
+            'nama_kelas' => $validated['nama_kelas'],
+        ]);
+
+        return redirect()
+            ->route('guru.data-siswa')
+            ->with('success', 'Ruangan kelas berhasil ditambahkan.');
+    }
 }

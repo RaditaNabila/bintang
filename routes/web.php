@@ -166,3 +166,4 @@ Route::get('/wali', [OrangTuaController::class, 'index'])->name('wali');
 Route::post('/logout', function () {
     return redirect()->route('welcome');
 })->name('logout');
+

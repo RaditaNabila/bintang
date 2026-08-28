@@ -10,11 +10,22 @@ use Illuminate\Validation\Rule;
 class KelolaAkunController extends Controller
 {
     /**
-     * Menampilkan semua akun pengguna
+     * Menampilkan semua akun pengguna dengan Pagination & Search
      */
-    public function index()
+    public function index(Request $request)
     {
-        $pengguna = Pengguna::orderBy('nama', 'asc')->get();
+        $search = $request->query('search');
+
+        $pengguna = Pengguna::query()
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%")
+                      ->orWhere('nama_pengguna', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('nama', 'asc')
+            ->paginate(15)
+            ->withQueryString(); // Mempertahankan query 'search' saat berpindah halaman pagination
 
         return view('guru.kelola', compact('pengguna'));
     }

@@ -6,19 +6,27 @@
 
 @section('content')
 
+@php
+    $currentTingkat = request('tingkat', 'all');
+    $currentKelasId = request('kelas_id', 'all');
+    $currentSearch = request('search', '');
+@endphp
+
 <!-- Navigasi Tingkat Kelas -->
 <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-    <button type="button" onclick="selectGrade('all', this)" class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 text-white shadow-sm transition">
+    <a href="{{ route('guru.data-siswa', array_filter(['search' => $currentSearch])) }}" 
+       class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold {{ $currentTingkat === 'all' ? 'bg-amber-500 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm' }} transition shrink-0">
         Semua Kelas
-    </button>
+    </a>
     @for($i = 1; $i <= 6; $i++)
-        <button type="button" onclick="selectGrade('{{ $i }}', this)" class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm transition">
+        <a href="{{ route('guru.data-siswa', array_filter(['tingkat' => $i, 'search' => $currentSearch])) }}" 
+           class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold {{ (string)$currentTingkat === (string)$i ? 'bg-amber-500 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm' }} transition shrink-0">
             Kelas {{ $i }}
-        </button>
+        </a>
     @endfor
 </div>
 
-<!-- Aksi -->
+<!-- Aksi Periodik -->
 <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-3.5 rounded-2xl border border-amber-100 shadow-sm gap-3">
     <div class="flex items-center gap-2 text-xs font-medium text-gray-600">
         <i class="fa-solid fa-sliders text-amber-500"></i>
@@ -41,18 +49,51 @@
 </div>
 
 <!-- Pencarian -->
-<div class="mt-4 bg-white p-4 rounded-2xl border border-amber-100 shadow-sm flex items-center">
+<form method="GET" action="{{ route('guru.data-siswa') }}" class="mt-4 bg-white p-4 rounded-2xl border border-amber-100 shadow-sm flex items-center gap-3">
+    @if(request('tingkat'))
+        <input type="hidden" name="tingkat" value="{{ request('tingkat') }}">
+    @endif
+    @if(request('kelas_id'))
+        <input type="hidden" name="kelas_id" value="{{ request('kelas_id') }}">
+    @endif
     <div class="relative w-full sm:w-80">
         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-        <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Cari NISN atau Nama Siswa..." class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition">
+        <input type="text" name="search" value="{{ $currentSearch }}" placeholder="Cari NISN atau Nama Siswa..." class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition">
     </div>
-</div>
+    <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold transition">
+        Cari
+    </button>
+</form>
 
 <!-- Tabel Siswa -->
 <div class="mt-4 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-3">
+        
+        <!-- Sub-Class / Rombel Filter -->
         <div class="flex items-center gap-2 overflow-x-auto" id="subClassContainer">
-            <span class="text-xs font-medium text-gray-400 mr-1 shrink-0">Pilih Rombel:</span>
+            @if($currentTingkat !== 'all')
+                <span class="text-xs font-medium text-gray-400 mr-1 shrink-0">Pilih Rombel:</span>
+                
+                {{-- Tombol Semua Rombel (Hanya mengirim parameter tingkat, tanpa kelas_id) --}}
+                <a href="{{ route('guru.data-siswa', array_filter(['tingkat' => $currentTingkat, 'search' => $currentSearch])) }}" 
+                   class="sub-btn px-3 py-1.5 rounded-lg text-xs {{ $currentKelasId === 'all' ? 'font-bold bg-amber-100 text-amber-800' : 'font-medium bg-gray-50 text-gray-600 hover:bg-gray-100' }} transition shrink-0">
+                    Semua (Kelas {{ $currentTingkat }})
+                </a>
+
+                {{-- List Rombel Sesuai Tingkat Yang Dipilih --}}
+                @foreach($kelas as $item)
+                    @if((string)$item->tingkat === (string)$currentTingkat)
+                        <a href="{{ route('guru.data-siswa', array_filter(['tingkat' => $item->tingkat, 'kelas_id' => $item->id, 'search' => $currentSearch])) }}" 
+                           class="sub-btn px-3 py-1.5 rounded-lg text-xs {{ (string)$currentKelasId === (string)$item->id ? 'font-bold bg-amber-100 text-amber-800' : 'font-medium bg-gray-50 text-gray-600 hover:bg-gray-100' }} transition shrink-0">
+                            {{ $item->nama_kelas }}
+                        </a>
+                    @endif
+                @endforeach
+            @else
+                <div class="text-xs font-semibold text-gray-500">
+                    Menampilkan seluruh siswa dari semua kelas
+                </div>
+            @endif
         </div>
 
         <button type="button" onclick="openModal('add')" class="shrink-0 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition">
@@ -65,6 +106,7 @@
         <table class="w-full text-left border-collapse text-sm" id="studentTable">
             <thead>
                 <tr class="border-b border-gray-100 text-gray-400 text-xs uppercase font-medium">
+                    <th class="py-3 px-4 text-center">No</th>
                     <th class="py-3 px-4">NISN</th>
                     <th class="py-3 px-4">Nama Siswa</th>
                     <th class="py-3 px-4">Kelas</th>
@@ -74,8 +116,11 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">
-                @forelse($siswa as $item)
-                    <tr class="hover:bg-gray-50/50"  data-id="{{ $item->id }}" data-tingkat="{{ $item->kelas?->tingkat }}" data-kelas-id="{{ $item->kelas?->id }}" data-kelas="{{ $item->kelas?->nama_kelas }}">
+                @forelse($siswa as $index => $item)
+                    <tr class="hover:bg-gray-50/50" data-id="{{ $item->id }}" data-tingkat="{{ $item->kelas?->tingkat }}" data-kelas-id="{{ $item->kelas?->id }}" data-kelas="{{ $item->kelas?->nama_kelas }}">
+                        <td class="py-3.5 px-4 text-center font-mono text-xs text-gray-400">
+                            {{ $loop->iteration + ($siswa->currentPage() - 1) * $siswa->perPage() }}
+                        </td>
                         <td class="py-3.5 px-4 font-mono text-xs text-gray-500">{{ $item->nisn }}</td>
                         <td class="py-3.5 px-4 font-semibold text-gray-700">{{ $item->nama_lengkap }}</td>
                         <td class="py-3.5 px-4">
@@ -110,11 +155,16 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="py-8 text-center text-gray-400">Belum ada data siswa.</td>
+                        <td colspan="7" class="py-8 text-center text-gray-400">Belum ada data siswa.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
+    </div>
+
+    <!-- Paginasi -->
+    <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+        {{ $siswa->links() }}
     </div>
 </div>
 
@@ -155,7 +205,6 @@
             </button>
         </div>
 
-        <!-- Mengarah ke rute guru.data-siswa.store -->
         <form id="studentForm" action="{{ route('guru.data-siswa.store') }}" method="POST" class="p-6 space-y-4">
             @csrf
             <input type="hidden" name="_method" id="formMethod" value="POST">
@@ -286,92 +335,6 @@
 <script>
 const kelasDatabase = @json($kelasData);
 
-let activeGrade = 'all';
-let activeSubClass = 'all';
-
-document.addEventListener('DOMContentLoaded', function() {
-    renderSubClasses('all');
-    applyFilters();
-});
-
-function selectGrade(grade, btn) {
-    activeGrade = String(grade);
-    activeSubClass = 'all';
-
-    document.querySelectorAll('.grade-btn').forEach(function(button) {
-        button.className = 'grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm transition';
-    });
-
-    btn.className = 'grade-btn px-4 py-2 rounded-xl text-xs font-semibold bg-amber-500 text-white shadow-sm transition';
-
-    renderSubClasses(activeGrade);
-    applyFilters();
-}
-
-function renderSubClasses(grade) {
-    const container = document.getElementById('subClassContainer');
-    if (!container) return;
-
-    container.innerHTML = `<span class="text-xs font-medium text-gray-400 mr-1 shrink-0">Pilih Rombel:</span>`;
-
-    const allBtn = document.createElement('button');
-    allBtn.type = 'button';
-    allBtn.textContent = grade === 'all' ? 'Semua Kelas' : `Semua (${grade})`;
-    allBtn.className = 'sub-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 transition shrink-0';
-    allBtn.onclick = function() { selectSubClass('all', allBtn); };
-    container.appendChild(allBtn);
-
-    if (grade === 'all') return;
-
-    const filteredClasses = kelasDatabase.filter(function(item) {
-        return String(item.tingkat) === String(grade);
-    });
-
-    filteredClasses.forEach(function(item) {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.textContent = item.nama_kelas;
-        button.className = 'sub-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 hover:bg-gray-100 transition shrink-0';
-        button.onclick = function() { selectSubClass(String(item.id), button); };
-        button.dataset.kelasId = item.id;
-        container.appendChild(button);
-    });
-}
-
-function selectSubClass(subClass, btn) {
-    activeSubClass = String(subClass);
-
-    document.querySelectorAll('.sub-btn').forEach(function(button) {
-        button.className = 'sub-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 hover:bg-gray-100 transition shrink-0';
-    });
-
-    btn.className = 'sub-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 transition shrink-0';
-    applyFilters();
-}
-
-function applyFilters() {
-    const searchInput = document.getElementById('searchInput');
-    if (!searchInput) return;
-
-    const search = searchInput.value.toLowerCase().trim();
-    const rows = document.querySelectorAll('#studentTable tbody tr');
-
-    rows.forEach(function(row) {
-        if (!row.cells || row.cells.length < 6) return;
-
-        const nisn = row.cells[0].textContent.toLowerCase();
-        const nama = row.cells[1].textContent.toLowerCase();
-        const rowGrade = row.dataset.tingkat;
-        const rowClassId = row.dataset.kelasId;
-
-        const matchGrade = activeGrade === 'all' || String(rowGrade) === String(activeGrade);
-        const matchSubClass = activeSubClass === 'all' || String(rowClassId) === String(activeSubClass);
-        const matchSearch = nisn.includes(search) || nama.includes(search);
-
-        row.style.display = matchGrade && matchSubClass && matchSearch ? '' : 'none';
-    });
-}
-
 function openModal(mode, nisn = '', nama = '', kelasId = '', gender = 'Laki-laki', poin = 250, studentId = '') {
     const modal = document.getElementById('studentModal');
     const title = document.getElementById('modalTitle');
@@ -385,32 +348,14 @@ function openModal(mode, nisn = '', nama = '', kelasId = '', gender = 'Laki-laki
 
     if (mode === 'add') {
         title.textContent = 'Tambah Siswa Baru';
-
         form.reset();
-
         form.action = "{{ route('guru.data-siswa.store') }}";
         formMethod.value = 'POST';
-
         document.getElementById('inputPoin').value = 250;
-
-        if (activeSubClass !== 'all') {
-            document.getElementById('selectKelas').value = activeSubClass;
-        } else if (activeGrade !== 'all') {
-            const firstClass = kelasDatabase.find(function(item) {
-                return String(item.tingkat) === String(activeGrade);
-            });
-
-            if (firstClass) {
-                document.getElementById('selectKelas').value = firstClass.id;
-            }
-        }
-
     } else if (mode === 'edit') {
         title.textContent = 'Edit Data Siswa';
-
         form.action = "{{ url('/guru/data-siswa') }}/" + studentId;
         formMethod.value = 'PUT';
-
         document.getElementById('inputNisn').value = nisn;
         document.getElementById('inputNama').value = nama;
         document.getElementById('selectKelas').value = kelasId;
@@ -431,7 +376,6 @@ function deleteStudent(id) {
     if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
         const form = document.createElement('form');
         form.method = 'POST';
-        // Mengarah ke URL /guru/data-siswa/{id} sesuai file web.php
         form.action = `/guru/data-siswa/${id}`;
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
@@ -472,44 +416,33 @@ function executeResetSemester() {
     }
 
     const scope = document.getElementById('resetTargetScope').value;
-
     let ids = [];
 
-    // Jika memilih siswa pada tampilan/filter saat ini
     if (scope === 'current') {
         const rows = document.querySelectorAll('#studentTable tbody tr');
-
         rows.forEach(function(row) {
-            if (row.style.display !== 'none' && row.dataset.id) {
+            if (row.dataset.id) {
                 ids.push(row.dataset.id);
             }
         });
 
         if (ids.length === 0) {
-            alert('Tidak ada siswa yang ditemukan pada tampilan/filter saat ini.');
+            alert('Tidak ada siswa yang ditemukan pada halaman saat ini.');
             return;
         }
     }
 
     if (scope === 'all') {
-        const yakin = confirm(
-            'PERINGATAN!\n\n' +
-            'Poin SELURUH siswa aktif akan direset menjadi 250.\n\n' +
-            'Apakah Anda yakin ingin melanjutkan?'
-        );
-
-        if (!yakin) {
+        if (!confirm('PERINGATAN!\n\nPoin SELURUH siswa aktif akan direset menjadi 250.\n\nApakah Anda yakin ingin melanjutkan?')) {
             return;
         }
     }
 
     const form = document.createElement('form');
-
     form.method = 'POST';
     form.action = "{{ route('guru.data-siswa.reset-poin') }}";
 
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
-        || '{{ csrf_token() }}';
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
 
     form.innerHTML = `
         <input type="hidden" name="_token" value="${csrfToken}">
@@ -518,11 +451,9 @@ function executeResetSemester() {
 
     ids.forEach(function(id) {
         const input = document.createElement('input');
-
         input.type = 'hidden';
         input.name = 'ids[]';
         input.value = id;
-
         form.appendChild(input);
     });
 
@@ -576,44 +507,56 @@ function renderClassListModal() {
         classes.forEach(function(item) {
             const chip = document.createElement('div');
             chip.className = 'flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200/60 text-amber-900 rounded-xl text-xs font-medium shadow-sm';
-            chip.innerHTML = `<span>${item.nama_kelas}</span>`;
+            chip.innerHTML = `
+                <span>${item.nama_kelas}</span>
+                <button type="button" onclick="deleteRoom(${item.id}, '${item.nama_kelas}')" class="text-rose-400 hover:text-rose-600 transition ml-1" title="Hapus Ruangan">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                </button>
+            `;
             grid.appendChild(chip);
         });
     }
 }
 
-function promptAddNewRoom() {
-    const tingkat = prompt(
-        'Masukkan tingkat kelas (1-6):'
-    );
+function deleteRoom(id, namaKelas) {
+    if (confirm(`Apakah Anda yakin ingin menghapus ruangan kelas "${namaKelas}"?\n\nPerhatian: Menghapus ruangan ini dapat mempengaruhi data siswa yang terdaftar di dalamnya.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/guru/data-siswa/kelas/${id}`;
 
-    if (tingkat === null) {
-        return;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
+
+        form.innerHTML = `
+            <input type="hidden" name="_token" value="${csrfToken}">
+            <input type="hidden" name="_method" value="DELETE">
+        `;
+
+        document.body.appendChild(form);
+        form.submit();
     }
+}
+
+function promptAddNewRoom() {
+    const tingkat = prompt('Masukkan tingkat kelas (1-6):');
+    if (tingkat === null) return;
 
     const tingkatNumber = parseInt(tingkat);
-
     if (isNaN(tingkatNumber) || tingkatNumber < 1 || tingkatNumber > 6) {
         alert('Tingkat kelas harus berupa angka 1 sampai 6.');
         return;
     }
 
-    const namaKelas = prompt(
-        'Masukkan nama ruangan kelas:\nContoh: 1A, 1B, 2A, 6B'
-    );
-
+    const namaKelas = prompt('Masukkan nama ruangan kelas:\nContoh: 1A, 1B, 2A, 6B');
     if (namaKelas === null || namaKelas.trim() === '') {
         alert('Nama ruangan kelas wajib diisi.');
         return;
     }
 
     const form = document.createElement('form');
-
     form.method = 'POST';
     form.action = "{{ route('guru.data-siswa.kelas.store') }}";
 
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
-        || '{{ csrf_token() }}';
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
 
     form.innerHTML = `
         <input type="hidden" name="_token" value="${csrfToken}">
