@@ -130,7 +130,10 @@ Route::prefix('guru')->name('guru.')->group(function () {
         ->name('pelanggaran.destroy');
 
     Route::post('/pelanggaran/kategori', [PoinPelanggaranController::class, 'storeKategori'])
-        ->name('pelanggaran.kategori.store');
+        ->name('pelanggaran.storeKategori');
+    
+    Route::delete('/pelanggaran/kategori/{id}', [PoinPelanggaranController::class, 'destroyKategori'])
+    ->name('pelanggaran.destroyKategori');
 
     // =========================
     // LAPORAN

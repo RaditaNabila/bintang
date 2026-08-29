@@ -13,14 +13,15 @@ class TransaksiPoin extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'siswa_id',
-        'pengguna_id',
-        'kategori_id',
-        'aturan_poin_id',
-        'jenis',
-        'poin',
-        'keterangan',
-        'tanggal_transaksi',
+    'siswa_id',
+    'pengguna_id',
+    'kategori_id',
+    'aturan_poin_id',
+    'jenis',
+    'poin',
+    'keterangan',
+    'sanksi',
+    'tanggal_transaksi',
     ];
 
     protected $casts = [

@@ -206,7 +206,7 @@
 
                     <div>
                         <h5 class="font-bold text-base text-gray-800 group-hover:text-amber-600 transition">
-                            Nama Developer 1
+                            Radita Nabila Shofa
                         </h5>
                         <p class="text-xs font-medium text-amber-600">
                             Frontend & UI/UX Designer
@@ -217,9 +217,9 @@
                     </div>
                 </div>
 
-                <a href="https://wa.me/6281234567890?text=Halo%20Dev%201,%20saya%20ingin%20bertanya%20tentang%20sistem%20Bintang%20Poin"
-                   target="_blank"
-                   class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-md transition-all duration-300 flex items-center justify-center gap-2">
+                <a href="https://wa.me/6287704490202?text=Halo%20Dev%201,%20saya%20ingin%20bertanya%20tentang%20sistem%20Bintang%20Poin"
+                target="_blank"
+                class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-md transition-all duration-300 flex items-center justify-center gap-2">
                     <i class="fa-brands fa-whatsapp text-sm"></i>
                     Chat Dev 1
                 </a>
@@ -230,16 +230,16 @@
                 <div class="flex items-center gap-4 mb-4">
                     <div class="relative">
                         <div class="w-20 h-20 rounded-2xl ring-4 ring-orange-400/30 p-1 bg-white shadow-md overflow-hidden group-hover:ring-orange-500 transition duration-300">
-                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400"
-                                 alt="Developer 2"
-                                 class="w-full h-full object-cover rounded-xl group-hover:scale-110 transition duration-500">
+                            <img src="{{ asset('foto/isma.jpg') }}"
+                                alt="Ismatul Hawa"
+                                class="w-full h-full object-cover rounded-xl group-hover:scale-110 transition duration-500">
                         </div>
                         <span class="absolute -bottom-1 -right-1 bg-emerald-500 border-2 border-white w-4 h-4 rounded-full" title="Online"></span>
                     </div>
 
                     <div>
                         <h5 class="font-bold text-base text-gray-800 group-hover:text-orange-600 transition">
-                            Nama Developer 2
+                            Ismatul Hawa
                         </h5>
                         <p class="text-xs font-medium text-orange-600">
                             Backend & Logic Developer
@@ -250,9 +250,9 @@
                     </div>
                 </div>
 
-                <a href="https://wa.me/6289876543210?text=Halo%20Dev%202,%20saya%20ingin%20bertanya%20tentang%20sistem%20Bintang%20Poin"
-                   target="_blank"
-                   class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-md transition-all duration-300 flex items-center justify-center gap-2">
+                <a href="https://wa.me/6282250216753?text=Halo%20Dev%202,%20saya%20ingin%20bertanya%20tentang%20sistem%20Bintang%20Poin"
+                target="_blank"
+                class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-md transition-all duration-300 flex items-center justify-center gap-2">
                     <i class="fa-brands fa-whatsapp text-sm"></i>
                     Chat Dev 2
                 </a>
@@ -274,9 +274,9 @@
         </div>
 
         <div class="shrink-0">
-            <a href="https://wa.me/6281234567890?text=Halo%20Dev,%20saya%20tertarik%20untuk%20konsultasi%20pembuatan%20web%20baru"
-               target="_blank"
-               class="inline-flex items-center px-5 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl text-xs font-bold shadow-md hover:shadow-lg transition transform hover:scale-105">
+            <a href="https://wa.me/6287704490202?text=Halo%20Kak%20Radita,%20saya%20tertarik%20untuk%20konsultasi%20pembuatan%20web%20baru"
+            target="_blank"
+            class="inline-flex items-center px-5 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl text-xs font-bold shadow-md hover:shadow-lg transition transform hover:scale-105">
                 <i class="fa-solid fa-comments mr-1.5"></i>
                 Konsultasi Project Baru
             </a>

@@ -76,18 +76,26 @@ class PoinPelanggaranController extends Controller
         // =====================================================
         // KATEGORI PELANGGARAN
         // =====================================================
+        // Diambil langsung dari tabel kategori.
+        // Tidak menggunakan tipe_pelanggaran.
+        // =====================================================
 
         $kategori = Kategori::where('jenis', 'pelanggaran')
-            ->orderBy('nama_kategori')
+            ->orderBy('id')
             ->get();
 
 
         // =====================================================
         // ATURAN / JENIS PELANGGARAN
         // =====================================================
+        // Mengambil semua aturan yang kategori_id-nya
+        // termasuk kategori pelanggaran.
+        // =====================================================
 
-        $aturanPelanggaran = AturanPoin::where('kategori_id', 1)
+        $aturanPelanggaran = AturanPoin::with('kategori')
+            ->whereIn('kategori_id', $kategori->pluck('id'))
             ->orderBy('nilai_poin', 'asc')
+            ->orderBy('judul', 'asc')
             ->get();
 
 
@@ -183,9 +191,15 @@ class PoinPelanggaranController extends Controller
             // =================================================
             // AMBIL ATURAN PELANGGARAN
             // =================================================
+            // Pastikan aturan berasal dari kategori
+            // yang jenisnya adalah "pelanggaran".
+            // =================================================
 
-            $aturan = AturanPoin::where('id', $validated['aturan_poin_id'])
-                ->where('kategori_id', 1)
+            $aturan = AturanPoin::with('kategori')
+                ->where('id', $validated['aturan_poin_id'])
+                ->whereHas('kategori', function ($query) {
+                    $query->where('jenis', 'pelanggaran');
+                })
                 ->firstOrFail();
 
 
@@ -228,9 +242,7 @@ class PoinPelanggaranController extends Controller
                 'poin' => $poin,
 
                 'keterangan' => $validated['keterangan'],
-
                 'sanksi' => $validated['sanksi'] ?? null,
-
                 'tanggal_transaksi' => $validated['tanggal_transaksi'],
             ]);
 
@@ -318,19 +330,22 @@ class PoinPelanggaranController extends Controller
     {
         $validated = $request->validate([
             'nama_kategori' => 'required|string|max:255',
+            'kategori_id' => 'required|integer|exists:kategori,id',
             'poin' => 'required|integer|min:1|max:100',
         ]);
 
-
         DB::transaction(function () use ($validated) {
 
+            $kategori = Kategori::where('id', $validated['kategori_id'])
+                ->where('jenis', 'pelanggaran')
+                ->firstOrFail();
+
             AturanPoin::create([
-                'kategori_id' => 1,
+                'kategori_id' => $kategori->id,
                 'judul' => $validated['nama_kategori'],
                 'nilai_poin' => abs((int) $validated['poin']),
             ]);
         });
-
 
         return redirect()
             ->route('guru.pelanggaran')
@@ -338,5 +353,24 @@ class PoinPelanggaranController extends Controller
                 'success',
                 'Jenis pelanggaran berhasil ditambahkan.'
             );
+    }
+
+    public function destroyKategori($id)
+    {
+        $aturan = AturanPoin::findOrFail($id);
+
+        $adaTransaksi = TransaksiPoin::where('aturan_poin_id', $aturan->id)->exists();
+
+        if ($adaTransaksi) {
+            return redirect()
+                ->route('guru.pelanggaran')
+                ->with('error', 'Jenis pelanggaran tidak dapat dihapus karena sudah digunakan dalam catatan pelanggaran.');
+        }
+
+        $aturan->delete();
+
+        return redirect()
+            ->route('guru.pelanggaran')
+            ->with('success', 'Jenis pelanggaran berhasil dihapus.');
     }
 }

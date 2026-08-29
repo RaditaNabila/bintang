@@ -6,22 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('poin_prestasis', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('transaksi_poin', function (Blueprint $table) {
+            $table->text('sanksi')->nullable()->after('keterangan');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('poin_prestasis');
+        Schema::table('transaksi_poin', function (Blueprint $table) {
+            $table->dropColumn('sanksi');
+        });
     }
 };
