@@ -285,8 +285,8 @@
 
         if (mode === 'edit') {
             modalTitle.innerText = 'Edit Pengguna';
-            userForm.action = `/guru/kelola/${id}`;
-
+            userForm.action = "{{ url('/guru/kelola-akun') }}/" + id;
+            
             let methodInput = document.getElementById('methodField');
             if (!methodInput) {
                 methodInput = document.createElement('input');

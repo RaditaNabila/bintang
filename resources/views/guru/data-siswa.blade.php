@@ -158,8 +158,8 @@
                               >
                                   <i class="fa-solid fa-pen-to-square text-xs"></i>
                               </button>
-                                <button type="button" onclick="deleteStudent('{{ $item->id }}')" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition">
-                                    <i class="fa-solid fa-trash text-xs"></i>
+                                <button type="button" data-id="{{ $item->id }}" data-name="{{ $item->nama_lengkap }}" onclick="archiveStudent(this.dataset.id, this.dataset.name)" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 flex items-center justify-center transition" title="Arsipkan Siswa">
+                                    <i class="fa-solid fa-box-archive text-xs"></i>
                                 </button>
                             </div>
                         </td>
@@ -335,6 +335,81 @@
     </div>
 </div>
 
+<!-- Modal Arsip Siswa -->
+<div id="archiveStudentModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden">
+        <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4 text-white flex justify-between items-center">
+            <div>
+                <h3 class="font-bold text-base">Arsipkan Siswa</h3>
+                <p class="text-[11px] text-amber-100">Pilih status siswa sebelum diarsipkan</p>
+            </div>
+            <button type="button" onclick="closeArchiveModal()" class="text-white/80 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form id="archiveStudentForm" method="POST" class="p-6 space-y-4">
+            @csrf
+
+            <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl">
+                <p class="text-xs text-gray-500">Siswa yang akan diarsipkan:</p>
+                <p id="archiveStudentName" class="font-bold text-gray-800 mt-1">-</p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2">
+                    Status Arsip
+                </label>
+
+                <select name="jenis_arsip" id="archiveType" required
+                    class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
+                    <option value="">-- Pilih Status --</option>
+                    <option value="pindah">Pindah / Keluar</option>
+                    <option value="lulus">Lulus / Alumni</option>
+                </select>
+            </div>
+
+            <div id="graduationYearField" class="hidden">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">
+                    Tahun Kelulusan
+                </label>
+                <input type="text" name="tahun_kelulusan" id="archiveYear"
+                    placeholder="Contoh: 2026"
+                    maxlength="4"
+                    class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">
+                    Catatan
+                </label>
+                <textarea name="catatan_status" id="archiveNote"
+                    rows="3"
+                    placeholder="Contoh: Pindah ke sekolah lain..."
+                    class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500"></textarea>
+            </div>
+
+            <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-[11px] text-blue-700">
+                <i class="fa-solid fa-circle-info mr-1"></i>
+                Setelah diarsipkan, siswa <strong>tidak akan tampil lagi</strong> di Data Siswa aktif dan dapat dilihat melalui menu Arsip.
+            </div>
+
+            <div class="flex justify-end gap-2 pt-4 border-t">
+                <button type="button" onclick="closeArchiveModal()"
+                    class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-200">
+                    Batal
+                </button>
+
+                <button type="submit"
+                    class="px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-bold hover:bg-amber-600">
+                    <i class="fa-solid fa-box-archive mr-1"></i>
+                    Arsipkan Siswa
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -392,23 +467,56 @@ function closeModal() {
     }
 }
 
-function deleteStudent(id) {
-    if (confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/guru/data-siswa/${id}`;
+function archiveStudent(id, nama) {
+    const modal = document.getElementById('archiveStudentModal');
+    const form = document.getElementById('archiveStudentForm');
+    const nameElement = document.getElementById('archiveStudentName');
+    const archiveType = document.getElementById('archiveType');
+    const archiveYear = document.getElementById('archiveYear');
+    const archiveNote = document.getElementById('archiveNote');
+    const graduationField = document.getElementById('graduationYearField');
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
+    if (!modal || !form || !nameElement) {
+        console.error('Modal arsip tidak ditemukan.');
+        return;
+    }
 
-        form.innerHTML = `
-            <input type="hidden" name="_token" value="${csrfToken}">
-            <input type="hidden" name="_method" value="DELETE">
-        `;
+    nameElement.textContent = nama;
 
-        document.body.appendChild(form);
-        form.submit();
+    form.action = "{{ url('/guru/data-siswa') }}/" + id + "/arsip";
+
+    archiveType.value = '';
+    archiveYear.value = '';
+    archiveNote.value = '';
+
+    graduationField.classList.add('hidden');
+    archiveYear.required = false;
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeArchiveModal() {
+    const modal = document.getElementById('archiveStudentModal');
+
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
     }
 }
+
+document.getElementById('archiveType')?.addEventListener('change', function() {
+    const graduationField = document.getElementById('graduationYearField');
+
+    if (this.value === 'lulus') {
+        graduationField.classList.remove('hidden');
+        document.getElementById('archiveYear').required = true;
+    } else {
+        graduationField.classList.add('hidden');
+        document.getElementById('archiveYear').required = false;
+        document.getElementById('archiveYear').value = '';
+    }
+});
 
 function openResetSemesterModal() {
     document.getElementById('confirmResetInput').value = '';

@@ -66,7 +66,7 @@
         <div class="flex items-center gap-2 w-full sm:w-auto">
             <button type="button" onclick="openManageCategoryModal()" class="w-full sm:w-auto px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-xs rounded-xl transition flex items-center justify-center gap-2">
                 <i class="fa-solid fa-list-check"></i>
-                <span>Daftar Kategori Prestasi</span>
+                <span>Daftar Jenis Prestasi</span>
             </button>
             <button type="button" onclick="openModal('add')" class="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition">
                 <i class="fa-solid fa-plus text-sm"></i><span>Catat Poin Prestasi</span>
@@ -190,17 +190,17 @@
 
             <div>
                 <div class="flex justify-between items-center mb-1">
-                    <label class="block text-xs font-semibold text-gray-700">Kategori Prestasi</label>
+                    <label class="block text-xs font-semibold text-gray-700">Jenis Prestasi</label>
                     <div class="flex items-center gap-2">
                         <button type="button" onclick="openManageCategoryModal()" class="text-[11px] font-semibold text-gray-500 hover:text-gray-700 flex items-center gap-1">
                             <i class="fa-solid fa-list text-[10px]"></i> Kelola
                         </button>
                         <button type="button" onclick="openAddCategoryModal()" class="text-[11px] text-amber-600 hover:text-amber-700 font-semibold flex items-center gap-1">
-                            <i class="fa-solid fa-plus text-[10px]"></i> Kategori Baru
+                            <i class="fa-solid fa-plus text-[10px]"></i> Jenis Baru
                         </button>
                     </div>
                 </div>
-                <select name="aturan_poin_id" id="selectAturanPoin" required placeholder="Cari kategori prestasi...">
+                <select name="aturan_poin_id" id="selectAturanPoin" required placeholder="Cari jenis prestasi...">
                     <option value="">-- Cari / Pilih Prestasi --</option>
                     @foreach($aturanPrestasi as $aturan)
                         <option value="{{ $aturan->id }}" data-poin="{{ $aturan->nilai_poin ?? $aturan->poin ?? 0 }}">

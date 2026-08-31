@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Siswa;
 use App\Models\Kelas;
+use App\Models\ArsipAlumni;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DataSiswaController extends Controller
 {
@@ -19,21 +21,19 @@ class DataSiswaController extends Controller
 
         $kelas = Kelas::all();
 
-        $siswaQuery = Siswa::with('kelas');
+        $siswaQuery = Siswa::with('kelas')
+            ->where('status', 'aktif');
 
-        // Filter berdasarkan Tingkat Kelas (1, 2, 3, dst.)
         if ($tingkat !== 'all') {
             $siswaQuery->whereHas('kelas', function ($q) use ($tingkat) {
                 $q->where('tingkat', $tingkat);
             });
         }
 
-        // Filter spesifik Rombel jika kelas_id dipilih
         if ($kelasId !== 'all') {
             $siswaQuery->where('kelas_id', $kelasId);
         }
 
-        // Filter Pencarian NISN / Nama
         if (!empty($search)) {
             $siswaQuery->where(function ($q) use ($search) {
                 $q->where('nisn', 'like', "%{$search}%")
@@ -41,7 +41,9 @@ class DataSiswaController extends Controller
             });
         }
 
-        $siswa = $siswaQuery->paginate(10)->withQueryString();
+        $siswa = $siswaQuery
+            ->paginate(10)
+            ->withQueryString();
 
         return view('guru.data-siswa', compact('siswa', 'kelas'));
     }
@@ -99,17 +101,47 @@ class DataSiswaController extends Controller
     }
 
     /**
-     * Menghapus siswa
+     * Mengarsipkan siswa
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $siswa = Siswa::findOrFail($id);
+        $request->validate([
+            'jenis_arsip' => 'required|in:pindah,lulus',
+            'tahun_kelulusan' => 'nullable|digits:4',
+            'catatan_status' => 'nullable|string|max:500',
+        ]);
 
-        $siswa->delete();
+        $siswa = Siswa::with('kelas')->findOrFail($id);
+
+        DB::transaction(function () use ($request, $siswa) {
+            $jenisArsip = $request->jenis_arsip;
+
+            ArsipAlumni::create([
+                'siswa_id' => $siswa->id,
+                'nis' => $siswa->nis,
+                'nama_lengkap' => $siswa->nama_lengkap,
+                'kelas_terakhir' => $siswa->kelas?->nama_kelas ?? '-',
+                'poin_akhir' => $siswa->poin_saat_ini,
+                'jenis_arsip' => $jenisArsip,
+                'tahun_kelulusan' => $jenisArsip === 'lulus'
+                    ? $request->tahun_kelulusan
+                    : null,
+                'nama_angkatan' => $jenisArsip === 'lulus'
+                    ? 'Alumni'
+                    : null,
+                'catatan_status' => $request->catatan_status
+                    ?: ($jenisArsip === 'lulus' ? 'Lulus' : 'Pindah'),
+                'diarsipkan_pada' => now(),
+            ]);
+
+            $siswa->update([
+                'status' => $jenisArsip,
+            ]);
+        });
 
         return redirect()
             ->route('guru.data-siswa')
-            ->with('success', 'Data siswa berhasil dihapus.');
+            ->with('success', 'Siswa berhasil diarsipkan sebagai ' . $request->jenis_arsip . '.');
     }
 
     /**

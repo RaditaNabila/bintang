@@ -230,7 +230,7 @@
                 <div class="flex items-center gap-4 mb-4">
                     <div class="relative">
                         <div class="w-20 h-20 rounded-2xl ring-4 ring-orange-400/30 p-1 bg-white shadow-md overflow-hidden group-hover:ring-orange-500 transition duration-300">
-                            <img src="{{ asset('foto/isma.jpg') }}"
+                            <img src="{{ asset('foto/isma.jpeg') }}"
                                 alt="Ismatul Hawa"
                                 class="w-full h-full object-cover rounded-xl group-hover:scale-110 transition duration-500">
                         </div>

@@ -8,6 +8,8 @@ class ArsipAlumni extends Model
 {
     protected $table = 'arsip_alumni';
 
+    protected $primaryKey = 'id';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -24,4 +26,15 @@ class ArsipAlumni extends Model
         'dibuat_pada',
         'diperbarui_pada',
     ];
+
+    protected $casts = [
+        'diarsipkan_pada' => 'datetime',
+        'dibuat_pada' => 'datetime',
+        'diperbarui_pada' => 'datetime',
+    ];
+
+    public function siswa()
+    {
+        return $this->belongsTo(Siswa::class, 'siswa_id', 'id');
+    }
 }

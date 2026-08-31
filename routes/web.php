@@ -13,6 +13,7 @@ use App\Http\Controllers\ArsipAlumniController;
 use App\Http\Controllers\KenaikanKelasController;
 use App\Http\Controllers\RelasiWaliSiswaController;
 use App\Http\Controllers\OrangTuaController;
+use App\Http\Controllers\GuruLaporanController;
 
 // =========================
 // AUTH & LANDING
@@ -30,7 +31,7 @@ Route::get('/pilih-peran', function () {
 // =========================
 // ROUTE GURU
 // =========================
-Route::prefix('guru')->name('guru.')->group(function () {
+Route::prefix('guru')->name('guru.')->middleware('auth')->group(function () {
 
     // DASHBOARD
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -45,7 +46,7 @@ Route::prefix('guru')->name('guru.')->group(function () {
     Route::get('/data-siswa', [DataSiswaController::class, 'index'])->name('data-siswa');
     Route::post('/data-siswa', [DataSiswaController::class, 'store'])->name('data-siswa.store');
     Route::put('/data-siswa/{id}', [DataSiswaController::class, 'update'])->name('data-siswa.update');
-    Route::delete('/data-siswa/{id}', [DataSiswaController::class, 'destroy'])->name('data-siswa.destroy');
+    Route::post('/data-siswa/{id}/arsip', [DataSiswaController::class, 'destroy'])->name('data-siswa.arsip');
     Route::post('/data-siswa/reset-poin', [DataSiswaController::class, 'resetPoin'])->name('data-siswa.reset-poin');
     Route::post('/data-siswa/kelas', [DataSiswaController::class, 'storeKelas'])->name('data-siswa.kelas.store');
     Route::delete('/data-siswa/kelas/{id}', [DataSiswaController::class, 'destroyKelas'])->name('data-siswa.kelas.destroy');
@@ -79,6 +80,7 @@ Route::prefix('guru')->name('guru.')->group(function () {
 
     // LAPORAN
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan');
+    Route::get('/laporan/export', [GuruLaporanController::class, 'exportExcel'])->name('laporan.export');
 
     // ARSIP
     Route::get('/arsip', [ArsipAlumniController::class, 'index'])->name('arsip');
@@ -93,7 +95,7 @@ Route::prefix('guru')->name('guru.')->group(function () {
 // =========================
 // ROUTE WALI / ORANG TUA
 // =========================
-Route::get('/wali', [OrangTuaController::class, 'index'])->name('wali');
+Route::get('/wali', [OrangTuaController::class, 'index'])->name('wali')->middleware('auth');
 
 // =========================
 // LOGOUT

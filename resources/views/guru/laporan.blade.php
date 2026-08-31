@@ -65,10 +65,10 @@
                     Total {{ $siswa->total() }} Siswa
                 </span>
 
-                <!-- Tombol Export Excel (Siap dihubungkan oleh rekan tim) -->
-                <button onclick="alert('Fitur Export Excel akan diproses oleh tim')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-sm transition">
+                <!-- Tombol Export Excel Aktif -->
+                <a href="{{ route('guru.laporan.export', request()->all()) }}" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl flex items-center gap-2 shadow-sm transition">
                     <i class="fa-solid fa-file-excel text-sm"></i> Export Excel
-                </button>
+                </a>
             </div>
         </div>
 

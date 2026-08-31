@@ -476,91 +476,64 @@
             </div>
 
 
-            <form
-                id="violationForm"
-                action="{{ route('guru.pelanggaran.store') }}"
-                method="POST"
-                class="p-6 space-y-4"
-            >
-
-                @csrf
-
-
-                {{-- SISWA --}}
+            <form id="violationForm" action="{{ route('guru.pelanggaran.store') }}" method="POST" class="p-6 space-y-4">
+                    @csrf
+                {{-- 1. SIAPA YANG MELANGGAR --}}
                 <div>
-
                     <label class="block text-xs font-semibold text-gray-700 mb-1">
                         Pilih Siswa
                     </label>
-
-                    <select
-                        id="selectSiswa"
-                        name="siswa_id"
-                        required
-                        placeholder="Cari NIS atau nama siswa..."
-                    >
-
-                        <option value="">
-                            -- Cari / Pilih Siswa --
-                        </option>
-
+                    <select id="selectSiswa" name="siswa_id" required placeholder="Cari NIS atau nama siswa...">
+                        <option value="">-- Cari / Pilih Siswa --</option>
                         @foreach($siswa as $s)
-
                             <option value="{{ $s->id }}">
-                                {{ $s->nis ?? 'N/A' }}
-                                -
-                                {{ $s->nama_lengkap }}
-                                ({{ $s->kelas->nama_kelas ?? '-' }})
+                                {{ $s->nis ?? 'N/A' }} - {{ $s->nama_lengkap }} ({{ $s->kelas->nama_kelas ?? '-' }})
                             </option>
-
                         @endforeach
-
                     </select>
-
                 </div>
 
-
-                {{-- KATEGORI PELANGGARAN --}}
+                {{-- 2. KAPAN TERJADI --}}
                 <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">
+                        Tanggal Terjadi
+                    </label>
+                    <input
+                        type="date"
+                        id="inputTanggal"
+                        name="tanggal_transaksi"
+                        required
+                        value="{{ date('Y-m-d') }}"
+                        class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-rose-500"
+                    >
+                </div>
 
+                {{-- 3. PELANGGARANNYA APA --}}
+                <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">
                         Kategori Pelanggaran
                     </label>
-
                     <select
                         id="selectKategoriPelanggaran"
                         onchange="filterAturanByKategori()"
                         class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-rose-500 bg-gray-50 font-medium"
                     >
-
-                        <option value="semua">
-                            -- Semua Kategori --
-                        </option>
-
+                        <option value="semua">-- Semua Kategori --</option>
                         @foreach($kategori as $kat)
-
                             <option value="{{ $kat->id }}">
                                 {{ $kat->nama_kategori }}
                             </option>
-
                         @endforeach
-
                     </select>
-
                 </div>
 
-
-                {{-- JENIS PELANGGARAN --}}
                 <div>
-
                     <div class="flex justify-between items-center mb-1">
-
                         <label class="block text-xs font-semibold text-gray-700">
                             Pilih Jenis Pelanggaran
                         </label>
 
                         <div class="flex items-center gap-2">
-
                             <button
                                 type="button"
                                 onclick="openManageCategoryModal()"
@@ -578,11 +551,8 @@
                                 <i class="fa-solid fa-plus text-[10px]"></i>
                                 Jenis Baru
                             </button>
-
                         </div>
-
                     </div>
-
 
                     <select
                         id="selectAturanPelanggaran"
@@ -590,32 +560,22 @@
                         required
                         placeholder="Cari jenis pelanggaran..."
                     >
-
-                        <option value="">
-                            -- Cari / Pilih Jenis Pelanggaran --
-                        </option>
+                        <option value="">-- Cari / Pilih Jenis Pelanggaran --</option>
 
                         @foreach($aturanPelanggaran as $aturan)
-
                             <option
                                 value="{{ $aturan->id }}"
                                 data-poin="{{ $aturan->nilai_poin }}"
                                 data-kategori="{{ $aturan->kategori_id }}"
                             >
-                                {{ $aturan->judul }}
-                                (-{{ $aturan->nilai_poin }} Poin)
+                                {{ $aturan->judul }} (-{{ $aturan->nilai_poin }} Poin)
                             </option>
-
                         @endforeach
-
                     </select>
-
                 </div>
 
-
-                {{-- POIN --}}
+                {{-- 4. BERAPA POIN --}}
                 <div>
-
                     <label class="block text-xs font-semibold text-gray-700 mb-1">
                         Poin Pengurangan (-)
                     </label>
@@ -633,13 +593,10 @@
                     <p class="text-[10px] text-gray-400 mt-1">
                         Poin ditentukan otomatis berdasarkan jenis pelanggaran.
                     </p>
-
                 </div>
 
-
-                {{-- KETERANGAN --}}
+                {{-- 5. KETERANGANNYA --}}
                 <div>
-
                     <label class="block text-xs font-semibold text-gray-700 mb-1">
                         Bentuk / Rincian Pelanggaran
                     </label>
@@ -652,71 +609,43 @@
                         placeholder="Contoh: Siswa datang terlambat 20 menit..."
                         class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-rose-500"
                     ></textarea>
-
                 </div>
 
-
-                {{-- TANGGAL --}}
+                {{-- 6. SANKSINYA --}}
                 <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">
+                    Tindakan Pembinaan / Sanksi
+                </label>
 
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">
-                        Tanggal Transaksi
-                    </label>
+                <input
+                    type="text"
+                    id="inputSanksi"
+                    name="sanksi"
+                    placeholder="Contoh: Nasihat dan pemanggilan orang tua"
+                    class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-rose-500"
+                >
+</div>
 
-                    <input
-                        type="date"
-                        id="inputTanggal"
-                        name="tanggal_transaksi"
-                        required
-                        value="{{ date('Y-m-d') }}"
-                        class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-rose-500"
-                    >
+{{-- BUTTON --}}
+<div class="flex justify-end gap-2 pt-4 border-t border-gray-100">
+    <button
+        type="button"
+        onclick="closeModal()"
+        class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-200 transition"
+    >
+        Batal
+    </button>
 
-                </div>
+    <button
+        type="submit"
+        class="px-4 py-2 bg-rose-500 text-white rounded-xl text-xs font-medium hover:bg-rose-600 transition"
+    >
+        <i class="fa-solid fa-floppy-disk mr-1"></i>
+        Simpan Pelanggaran
+    </button>
+</div>
+</form>
 
-
-                {{-- SANKSI --}}
-                <div>
-
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">
-                        Tindakan Pembinaan / Sanksi
-                    </label>
-
-                    <input
-                        type="text"
-                        id="inputSanksi"
-                        name="sanksi"
-                        placeholder="Contoh: Nasihat dan pemanggilan orang tua"
-                        class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-rose-500"
-                    >
-
-                </div>
-
-
-                {{-- BUTTON --}}
-                <div class="flex justify-end gap-2 pt-4 border-t border-gray-100">
-
-                    <button
-                        type="button"
-                        onclick="closeModal()"
-                        class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-200 transition"
-                    >
-                        Batal
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="px-4 py-2 bg-rose-500 text-white rounded-xl text-xs font-medium hover:bg-rose-600 transition"
-                    >
-                        <i class="fa-solid fa-floppy-disk mr-1"></i>
-                        Simpan Pelanggaran
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
 
     </div>
 
@@ -1158,12 +1087,16 @@ function updatePoinValue(value) {
 
 /* MODAL CATAT PELANGGARAN */
 function openModal() {
-
-    const modal =
-        document.getElementById('violationModal');
+    const modal = document.getElementById('violationModal');
 
     if (!modal) {
         return;
+    }
+
+    const tanggal = document.getElementById('inputTanggal');
+
+    if (tanggal) {
+        tanggal.value = new Date().toLocaleDateString('en-CA');
     }
 
     modal.classList.remove('hidden');
