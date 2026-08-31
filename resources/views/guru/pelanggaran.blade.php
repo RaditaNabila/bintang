@@ -42,6 +42,14 @@
         </div>
     @endif
 
+    {{-- ALERT ERROR --}}
+    @if(session('error'))
+        <div class="mb-5 bg-rose-50 border border-rose-100 text-rose-700 px-4 py-3 rounded-xl text-xs flex items-center gap-2">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>{{ session('error') }}</span>
+        </div>
+    @endif
+
 
     {{-- VALIDATION ERROR --}}
     @if($errors->any())
@@ -394,6 +402,48 @@
             </table>
 
         </div>
+
+        {{-- KOMPONEN PAGINASI TABEL --}}
+        @if(method_exists($transaksi, 'hasPages') && $transaksi->hasPages())
+            <div class="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 w-full bg-white">
+                <!-- Data Information -->
+                <div class="text-xs text-gray-500">
+                    Menampilkan <span class="font-bold text-gray-700">{{ $transaksi->firstItem() }}</span>
+                    hingga <span class="font-bold text-gray-700">{{ $transaksi->lastItem() }}</span>
+                    dari <span class="font-bold text-gray-700">{{ $transaksi->total() }}</span> catatan
+                </div>
+
+                <!-- Page Navigation -->
+                <div class="inline-flex items-center gap-1.5">
+                    {{-- Prev Button --}}
+                    @if ($transaksi->onFirstPage())
+                        <span class="px-3 py-1.5 bg-gray-100 text-gray-400 rounded-xl text-xs font-semibold cursor-not-allowed select-none">
+                            <i class="fa-solid fa-chevron-left text-[10px] mr-1"></i> Prev
+                        </span>
+                    @else
+                        <a href="{{ $transaksi->previousPageUrl() }}" class="px-3 py-1.5 bg-white border border-gray-200 text-gray-600 hover:bg-rose-500 hover:text-white hover:border-rose-500 rounded-xl text-xs font-semibold transition">
+                            <i class="fa-solid fa-chevron-left text-[10px] mr-1"></i> Prev
+                        </a>
+                    @endif
+
+                    {{-- Page Status --}}
+                    <span class="px-3 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 rounded-xl border border-rose-200/60">
+                        {{ $transaksi->currentPage() }} / {{ $transaksi->lastPage() }}
+                    </span>
+
+                    {{-- Next Button --}}
+                    @if ($transaksi->hasMorePages())
+                        <a href="{{ $transaksi->nextPageUrl() }}" class="px-3 py-1.5 bg-white border border-gray-200 text-gray-600 hover:bg-rose-500 hover:text-white hover:border-rose-500 rounded-xl text-xs font-semibold transition">
+                            Next <i class="fa-solid fa-chevron-right text-[10px] ml-1"></i>
+                        </a>
+                    @else
+                        <span class="px-3 py-1.5 bg-gray-100 text-gray-400 rounded-xl text-xs font-semibold cursor-not-allowed select-none">
+                            Next <i class="fa-solid fa-chevron-right text-[10px] ml-1"></i>
+                        </span>
+                    @endif
+                </div>
+            </div>
+        @endif
 
     </div>
 

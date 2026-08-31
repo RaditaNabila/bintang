@@ -4,20 +4,18 @@
 @section('page_description','Catat kebaikan, kedisiplinan, dan capaian siswa')
 
 @push('styles')
-<!-- Tom Select CSS untuk Dropdown Searchable -->
 <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
 <style>
-    /* Styling Tom Select agar menyatu sempurna dengan desain Tailwind */
     .ts-control {
-        border-radius: 0.75rem !important; /* rounded-xl */
-        border-color: #e5e7eb !important; /* border-gray-200 */
+        border-radius: 0.75rem !important;
+        border-color: #e5e7eb !important;
         padding: 0.5rem 0.875rem !important;
-        font-size: 0.75rem !important; /* text-xs */
+        font-size: 0.75rem !important;
         background-color: #ffffff !important;
         box-shadow: none !important;
     }
     .ts-wrapper.focus .ts-control {
-        border-color: #f59e0b !important; /* border-amber-500 */
+        border-color: #f59e0b !important;
         box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
     }
     .ts-dropdown {
@@ -109,7 +107,7 @@
                         <td class="py-3.5 px-4 font-mono text-xs text-gray-500">{{ $item->siswa->nis ?? '-' }}</td>
                         <td class="py-3.5 px-4 font-semibold text-gray-700">{{ $item->siswa->nama_lengkap ?? '-' }}</td>
                         <td class="py-3.5 px-4 text-gray-500">{{ $item->siswa->kelas->nama_kelas ?? '-' }}</td>
-                        <td class="py-3.5 px-4"><span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-medium">{{ $item->aturanPoin->judul ?? '-' }}</span></td>
+                        <td class="py-3.5 px-4"><span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-medium">{{ $item->aturanPoin->judul ?? $item->aturanPoin->nama_aturan ?? '-' }}</span></td>
                         <td class="py-3.5 px-4 text-gray-600">{{ $item->keterangan ?? '-' }}</td>
                         <td class="py-3.5 px-4 font-bold text-emerald-600 text-center">+{{ $item->poin }}</td>
                         <td class="py-3.5 px-4 text-center"><span class="px-2.5 py-1 bg-amber-50 text-amber-700 font-bold rounded-lg text-xs">{{ $item->siswa->poin_saat_ini ?? 0 }}</span></td>
@@ -129,6 +127,42 @@
                 </tbody>
             </table>
         </div>
+
+        @if(method_exists($transaksi, 'hasPages') && $transaksi->hasPages())
+            <div class="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 w-full bg-white">
+                <div class="text-xs text-gray-500">
+                    Menampilkan <span class="font-bold text-gray-700">{{ $transaksi->firstItem() }}</span>
+                    hingga <span class="font-bold text-gray-700">{{ $transaksi->lastItem() }}</span>
+                    dari <span class="font-bold text-gray-700">{{ $transaksi->total() }}</span> catatan
+                </div>
+
+                <div class="inline-flex items-center gap-1.5">
+                    @if ($transaksi->onFirstPage())
+                        <span class="px-3 py-1.5 bg-gray-100 text-gray-400 rounded-xl text-xs font-semibold cursor-not-allowed select-none">
+                            <i class="fa-solid fa-chevron-left text-[10px] mr-1"></i> Prev
+                        </span>
+                    @else
+                        <a href="{{ $transaksi->previousPageUrl() }}" class="px-3 py-1.5 bg-white border border-gray-200 text-gray-600 hover:bg-amber-500 hover:text-white rounded-xl text-xs font-semibold transition">
+                            <i class="fa-solid fa-chevron-left text-[10px] mr-1"></i> Prev
+                        </a>
+                    @endif
+
+                    <span class="px-3 py-1.5 text-xs font-bold text-amber-700 bg-amber-50 rounded-xl border border-amber-200/60">
+                        {{ $transaksi->currentPage() }} / {{ $transaksi->lastPage() }}
+                    </span>
+
+                    @if ($transaksi->hasMorePages())
+                        <a href="{{ $transaksi->nextPageUrl() }}" class="px-3 py-1.5 bg-white border border-gray-200 text-gray-600 hover:bg-amber-500 hover:text-white rounded-xl text-xs font-semibold transition">
+                            Next <i class="fa-solid fa-chevron-right text-[10px] ml-1"></i>
+                        </a>
+                    @else
+                        <span class="px-3 py-1.5 bg-gray-100 text-gray-400 rounded-xl text-xs font-semibold cursor-not-allowed select-none">
+                            Next <i class="fa-solid fa-chevron-right text-[10px] ml-1"></i>
+                        </span>
+                    @endif
+                </div>
+            </div>
+        @endif
     </div>
 </div>
 
@@ -144,7 +178,6 @@
             <input type="hidden" name="_method" id="formMethod" value="POST">
             <input type="hidden" name="tanggal_transaksi" id="inputTanggal" value="{{ date('Y-m-d') }}">
 
-            <!-- Select Siswa Searchable -->
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Pilih Siswa</label>
                 <select name="siswa_id" id="selectSiswa" required placeholder="Cari nama atau NIS siswa...">
@@ -155,7 +188,6 @@
                 </select>
             </div>
 
-            <!-- Select Kategori Prestasi Searchable -->
             <div>
                 <div class="flex justify-between items-center mb-1">
                     <label class="block text-xs font-semibold text-gray-700">Kategori Prestasi</label>
@@ -171,8 +203,8 @@
                 <select name="aturan_poin_id" id="selectAturanPoin" required placeholder="Cari kategori prestasi...">
                     <option value="">-- Cari / Pilih Prestasi --</option>
                     @foreach($aturanPrestasi as $aturan)
-                        <option value="{{ $aturan->id }}" data-poin="{{ $aturan->nilai_poin }}">
-                            {{ $aturan->judul }} (+{{ $aturan->nilai_poin }} Poin)
+                        <option value="{{ $aturan->id }}" data-poin="{{ $aturan->nilai_poin ?? $aturan->poin ?? 0 }}">
+                            {{ $aturan->judul ?? $aturan->nama_aturan }} (+{{ $aturan->nilai_poin ?? $aturan->poin ?? 0 }} Poin)
                         </option>
                     @endforeach
                 </select>
@@ -245,13 +277,16 @@
                     <tbody class="divide-y divide-gray-50">
                         @forelse($aturanPrestasi as $aturan)
                             <tr class="hover:bg-gray-50/50">
-                                <td class="py-2.5 px-3 font-semibold text-gray-700">{{ $aturan->judul }}</td>
-                                <td class="py-2.5 px-3 text-center font-bold text-emerald-600">+{{ $aturan->nilai_poin }}</td>
+                                <td class="py-2.5 px-3 font-semibold text-gray-700">{{ $aturan->judul ?? $aturan->nama_aturan }}</td>
+                                <td class="py-2.5 px-3 text-center font-bold text-emerald-600">+{{ $aturan->nilai_poin ?? $aturan->poin ?? 0 }}</td>
                                 <td class="py-2.5 px-3 text-center">
-                                    {{-- Sesuaikan route ini jika sudah membuat route destroy kategori di backend --}}
-                                    <button type="button" onclick="alert('Fitur hapus frontend. Hubungkan ke route backend untuk memproses hapus.')" class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 inline-flex items-center justify-center transition" title="Hapus Kategori">
-                                        <i class="fa-solid fa-trash text-xs"></i>
-                                    </button>
+                                    <form action="{{ route('guru.poin-prestasi.kategori.destroy', $aturan->id) }}" method="POST" onsubmit="return confirm('Yakin hapus kategori ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 inline-flex items-center justify-center transition" title="Hapus Kategori">
+                                            <i class="fa-solid fa-trash text-xs"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         @empty
@@ -272,20 +307,17 @@
 @endsection
 
 @push('scripts')
-<!-- Tom Select JS -->
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
 <script>
-let selectSiswaTs, selectAturanPoinTs;
+let selectSiswaTs = null, selectAturanPoinTs = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Inisialisasi Tom Select untuk Siswa
     selectSiswaTs = new TomSelect("#selectSiswa", {
         create: false,
         sortField: { field: "text", direction: "asc" }
     });
 
-    // Inisialisasi Tom Select untuk Kategori Prestasi
     selectAturanPoinTs = new TomSelect("#selectAturanPoin", {
         create: false,
         sortField: { field: "text", direction: "asc" },
@@ -301,24 +333,30 @@ function updatePointFromAturan(value) {
         inputPoin.value = '';
         return;
     }
-    const selectedElement = document.querySelector(`#selectAturanPoin option[value="${value}"]`);
-    inputPoin.value = selectedElement ? selectedElement.dataset.poin : '';
+    const opt = document.querySelector(`#selectAturanPoin option[value="${value}"]`);
+    if (opt) {
+        inputPoin.value = opt.getAttribute('data-poin') || '';
+    }
 }
 
 function openModal(mode){
-    const m = document.getElementById('achievementModal'), f = document.getElementById('achievementForm');
+    const m = document.getElementById('achievementModal');
+    const f = document.getElementById('achievementForm');
+
     document.getElementById('modalTitle').textContent = mode === 'edit' ? 'Edit Poin Prestasi' : 'Catat Poin Prestasi';
+
     if(mode === 'add'){
         f.action = "{{ route('guru.poin-prestasi.store') }}";
         document.getElementById('formMethod').value = 'POST';
 
-        selectSiswaTs.clear();
-        selectAturanPoinTs.clear();
+        if (selectSiswaTs) selectSiswaTs.clear(true);
+        if (selectAturanPoinTs) selectAturanPoinTs.clear(true);
 
         document.getElementById('inputKeterangan').value = '';
         document.getElementById('inputPoin').value = '';
         document.getElementById('inputTanggal').value = "{{ date('Y-m-d') }}";
     }
+
     m.classList.remove('hidden');
     m.classList.add('flex');
 }
@@ -329,8 +367,8 @@ function openEditModal(id, siswaId, aturanPoinId, keterangan, poin, tanggal) {
     document.getElementById('formMethod').value = 'PUT';
     document.getElementById('modalTitle').textContent = 'Edit Poin Prestasi';
 
-    selectSiswaTs.setValue(siswaId);
-    selectAturanPoinTs.setValue(aturanPoinId);
+    if (selectSiswaTs) selectSiswaTs.setValue(siswaId);
+    if (selectAturanPoinTs) selectAturanPoinTs.setValue(aturanPoinId);
 
     document.getElementById('inputKeterangan').value = keterangan;
     document.getElementById('inputPoin').value = poin;
@@ -373,17 +411,17 @@ function closeManageCategoryModal(){
 }
 
 function filterData(){
-    const search = document.getElementById('searchInput').value.toLowerCase().trim(),
-          bulan = document.getElementById('filterBulan').value;
+    const search = document.getElementById('searchInput').value.toLowerCase().trim();
+    const bulan = document.getElementById('filterBulan').value;
+
     document.querySelectorAll('#achievementTable tbody tr').forEach(row => {
         if(row.cells.length < 9) return;
-        const cocokSearch = row.innerText.toLowerCase().includes(search),
-              cocokBulan = !bulan || row.dataset.bulan === bulan;
+        const cocokSearch = row.innerText.toLowerCase().includes(search);
+        const cocokBulan = !bulan || row.dataset.bulan === bulan;
         row.style.display = cocokSearch && cocokBulan ? '' : 'none';
     });
 }
 
-// Close Modals on backdrop click or ESC key
 document.addEventListener('click', function(e) {
     if (e.target === document.getElementById('achievementModal')) closeModal();
     if (e.target === document.getElementById('addCategoryModal')) closeAddCategoryModal();

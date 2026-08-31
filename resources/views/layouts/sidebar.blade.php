@@ -145,7 +145,7 @@
     </div>
 
 
-    {{-- USER --}}
+    {{-- USER DINAMIS DARI DATABASE --}}
     <div class="p-3 border-t border-amber-400/40">
 
         <div class="flex items-center justify-between">
@@ -153,17 +153,17 @@
             <div class="flex items-center gap-2.5 min-w-0">
 
                 <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs shrink-0">
-                    U
+                    {{ strtoupper(substr(Auth::user()->nama ?? 'U', 0, 1)) }}
                 </div>
 
                 <div class="overflow-hidden">
 
                     <p class="text-xs font-semibold leading-none truncate">
-                        Ustadz Ahmad
+                        {{ Auth::user()->nama ?? 'Pengguna' }}
                     </p>
 
-                    <span class="text-[10px] text-amber-200">
-                        Guru
+                    <span class="text-[10px] text-amber-200 capitalize">
+                        {{ Auth::user()->peran ?? 'Guru' }}
                     </span>
 
                 </div>
@@ -185,6 +185,7 @@
     </div>
 
 </aside>
+
 {{-- MODAL KONFIRMASI LOGOUT --}}
 <div id="logoutModal"
      class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -222,10 +223,14 @@
                 Batal
             </button>
 
-            <a href="{{ route('welcome') }}"
-               class="flex-1 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl text-xs font-semibold text-center transition shadow-sm">
-                Ya, Keluar
-            </a>
+            <!-- Form POST untuk Logout -->
+            <form action="{{ route('logout') }}" method="POST" class="flex-1">
+                @csrf
+                <button type="submit"
+                        class="w-full px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl text-xs font-semibold text-center transition shadow-sm">
+                    Ya, Keluar
+                </button>
+            </form>
 
         </div>
 
@@ -260,14 +265,12 @@
         }, 200);
     }
 
-    // Tutup modal jika klik area luar popup
     document.getElementById('logoutModal').addEventListener('click', function(event) {
         if (event.target === this) {
             closeLogoutModal();
         }
     });
 
-    // Tutup dengan tombol ESC
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             closeLogoutModal();

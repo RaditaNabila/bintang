@@ -185,4 +185,25 @@ class DataSiswaController extends Controller
             ->route('guru.data-siswa')
             ->with('success', 'Ruangan kelas berhasil ditambahkan.');
     }
+
+    /**
+     * Menghapus ruangan kelas
+     */
+    public function destroyKelas($id)
+    {
+        $kelas = Kelas::findOrFail($id);
+
+        // Opsional: Cek jika kelas masih digunakan siswa
+        if ($kelas->siswa()->count() > 0) {
+            return redirect()
+                ->route('guru.data-siswa')
+                ->with('error', 'Kelas tidak dapat dihapus karena masih digunakan oleh siswa.');
+        }
+
+        $kelas->delete();
+
+        return redirect()
+            ->route('guru.data-siswa')
+            ->with('success', 'Ruangan kelas berhasil dihapus.');
+    }
 }

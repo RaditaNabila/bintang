@@ -26,12 +26,6 @@
         <div class="max-w-5xl mx-auto px-4 py-3.5 flex items-center justify-between">
             {{-- Logo & Back --}}
             <div class="flex items-center gap-3">
-                <a href="{{ route('pilih-peran') }}"
-                   class="bg-white/20 hover:bg-white/30 p-2 rounded-xl transition text-white"
-                   title="Kembali ke Pilihan Peran">
-                    <i class="fa-solid fa-arrow-left text-sm"></i>
-                </a>
-
                 <div class="flex items-center gap-2">
                     <div class="bg-white p-1.5 rounded-lg text-amber-500 text-base font-bold">
                         <i class="fa-solid fa-star"></i>

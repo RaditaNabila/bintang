@@ -14,12 +14,12 @@
 
 <!-- Navigasi Tingkat Kelas -->
 <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-    <a href="{{ route('guru.data-siswa', array_filter(['search' => $currentSearch])) }}" 
+    <a href="{{ route('guru.data-siswa', array_filter(['search' => $currentSearch])) }}"
        class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold {{ $currentTingkat === 'all' ? 'bg-amber-500 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm' }} transition shrink-0">
         Semua Kelas
     </a>
     @for($i = 1; $i <= 6; $i++)
-        <a href="{{ route('guru.data-siswa', array_filter(['tingkat' => $i, 'search' => $currentSearch])) }}" 
+        <a href="{{ route('guru.data-siswa', array_filter(['tingkat' => $i, 'search' => $currentSearch])) }}"
            class="grade-btn px-4 py-2 rounded-xl text-xs font-semibold {{ (string)$currentTingkat === (string)$i ? 'bg-amber-500 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-amber-100 border border-gray-200 shadow-sm' }} transition shrink-0">
             Kelas {{ $i }}
         </a>
@@ -68,14 +68,14 @@
 <!-- Tabel Siswa -->
 <div class="mt-4 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-3">
-        
+
         <!-- Sub-Class / Rombel Filter -->
         <div class="flex items-center gap-2 overflow-x-auto" id="subClassContainer">
             @if($currentTingkat !== 'all')
                 <span class="text-xs font-medium text-gray-400 mr-1 shrink-0">Pilih Rombel:</span>
-                
-                {{-- Tombol Semua Rombel (Hanya mengirim parameter tingkat, tanpa kelas_id) --}}
-                <a href="{{ route('guru.data-siswa', array_filter(['tingkat' => $currentTingkat, 'search' => $currentSearch])) }}" 
+
+                {{-- Tombol Semua Rombel --}}
+                <a href="{{ route('guru.data-siswa', array_filter(['tingkat' => $currentTingkat, 'search' => $currentSearch])) }}"
                    class="sub-btn px-3 py-1.5 rounded-lg text-xs {{ $currentKelasId === 'all' ? 'font-bold bg-amber-100 text-amber-800' : 'font-medium bg-gray-50 text-gray-600 hover:bg-gray-100' }} transition shrink-0">
                     Semua (Kelas {{ $currentTingkat }})
                 </a>
@@ -83,9 +83,14 @@
                 {{-- List Rombel Sesuai Tingkat Yang Dipilih --}}
                 @foreach($kelas as $item)
                     @if((string)$item->tingkat === (string)$currentTingkat)
-                        <a href="{{ route('guru.data-siswa', array_filter(['tingkat' => $item->tingkat, 'kelas_id' => $item->id, 'search' => $currentSearch])) }}" 
+                        @php
+                            $namaDisplay = \Illuminate\Support\Str::startsWith(strtolower($item->nama_kelas), 'kelas')
+                                ? $item->nama_kelas
+                                : 'Kelas ' . $item->nama_kelas;
+                        @endphp
+                        <a href="{{ route('guru.data-siswa', array_filter(['tingkat' => $item->tingkat, 'kelas_id' => $item->id, 'search' => $currentSearch])) }}"
                            class="sub-btn px-3 py-1.5 rounded-lg text-xs {{ (string)$currentKelasId === (string)$item->id ? 'font-bold bg-amber-100 text-amber-800' : 'font-medium bg-gray-50 text-gray-600 hover:bg-gray-100' }} transition shrink-0">
-                            {{ $item->nama_kelas }}
+                            {{ $namaDisplay }}
                         </a>
                     @endif
                 @endforeach
@@ -117,7 +122,13 @@
             </thead>
             <tbody class="divide-y divide-gray-50">
                 @forelse($siswa as $index => $item)
-                    <tr class="hover:bg-gray-50/50" data-id="{{ $item->id }}" data-tingkat="{{ $item->kelas?->tingkat }}" data-kelas-id="{{ $item->kelas?->id }}" data-kelas="{{ $item->kelas?->nama_kelas }}">
+                    @php
+                        $namaKelasTabel = $item->kelas?->nama_kelas;
+                        if ($namaKelasTabel && !\Illuminate\Support\Str::startsWith(strtolower($namaKelasTabel), 'kelas')) {
+                            $namaKelasTabel = 'Kelas ' . $namaKelasTabel;
+                        }
+                    @endphp
+                    <tr class="hover:bg-gray-50/50" data-id="{{ $item->id }}" data-tingkat="{{ $item->kelas?->tingkat }}" data-kelas-id="{{ $item->kelas?->id }}" data-kelas="{{ $namaKelasTabel }}">
                         <td class="py-3.5 px-4 text-center font-mono text-xs text-gray-400">
                             {{ $loop->iteration + ($siswa->currentPage() - 1) * $siswa->perPage() }}
                         </td>
@@ -125,7 +136,7 @@
                         <td class="py-3.5 px-4 font-semibold text-gray-700">{{ $item->nama_lengkap }}</td>
                         <td class="py-3.5 px-4">
                             <span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium">
-                                {{ $item->kelas?->nama_kelas ?? '-' }}
+                                {{ $namaKelasTabel ?? '-' }}
                             </span>
                         </td>
                         <td class="py-3.5 px-4 text-gray-600">{{ $item->jenis_kelamin }}</td>
@@ -162,8 +173,8 @@
         </table>
     </div>
 
-    <!-- Paginasi -->
-    <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+    <!-- Paginasi Rata Kanan-Kiri (Justified) -->
+    <div class="mt-4 pt-4 border-t border-gray-100 [&>nav]:w-full [&>nav]:flex [&>nav]:items-center [&>nav]:justify-between">
         {{ $siswa->links() }}
     </div>
 </div>
@@ -224,8 +235,13 @@
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Kelas</label>
                     <select id="selectKelas" name="kelas_id" required class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
                         @foreach($kelas as $item)
+                            @php
+                                $optionDisplay = \Illuminate\Support\Str::startsWith(strtolower($item->nama_kelas), 'kelas')
+                                    ? $item->nama_kelas
+                                    : 'Kelas ' . $item->nama_kelas;
+                            @endphp
                             <option value="{{ $item->id }}" data-tingkat="{{ $item->tingkat }}">
-                                {{ $item->nama_kelas }}
+                                {{ $optionDisplay }}
                             </option>
                         @endforeach
                     </select>
@@ -324,10 +340,14 @@
 @push('scripts')
 @php
     $kelasData = $kelas->map(function($item) {
+        $formattedName = \Illuminate\Support\Str::startsWith(strtolower($item->nama_kelas), 'kelas')
+            ? $item->nama_kelas
+            : 'Kelas ' . $item->nama_kelas;
+
         return [
             'id' => $item->id,
             'tingkat' => (string) $item->tingkat,
-            'nama_kelas' => $item->nama_kelas,
+            'nama_kelas' => $formattedName,
         ];
     })->values();
 @endphp
@@ -546,10 +566,15 @@ function promptAddNewRoom() {
         return;
     }
 
-    const namaKelas = prompt('Masukkan nama ruangan kelas:\nContoh: 1A, 1B, 2A, 6B');
+    let namaKelas = prompt('Masukkan nama ruangan kelas:\nContoh: Kelas 6D atau 6D');
     if (namaKelas === null || namaKelas.trim() === '') {
         alert('Nama ruangan kelas wajib diisi.');
         return;
+    }
+
+    namaKelas = namaKelas.trim();
+    if (!namaKelas.toLowerCase().startsWith('kelas')) {
+        namaKelas = 'Kelas ' + namaKelas;
     }
 
     const form = document.createElement('form');
@@ -561,7 +586,7 @@ function promptAddNewRoom() {
     form.innerHTML = `
         <input type="hidden" name="_token" value="${csrfToken}">
         <input type="hidden" name="tingkat" value="${tingkatNumber}">
-        <input type="hidden" name="nama_kelas" value="${namaKelas.trim()}">
+        <input type="hidden" name="nama_kelas" value="${namaKelas}">
     `;
 
     document.body.appendChild(form);

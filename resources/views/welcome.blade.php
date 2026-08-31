@@ -22,31 +22,49 @@
         <div class="login-right">
             <h2>Selamat Datang</h2>
             <p class="subtitle">Silakan login untuk mengakses sistem Bintang Poin.</p>
-            <form>
+
+            {{-- Pesan Alert Error dari Controller --}}
+            @if(session('error'))
+                <div style="color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; font-size: 14px;">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            <form action="{{ route('login.process') }}" method="POST">
+                @csrf
                 <div class="form-group">
                     <label>Username</label>
                     <div class="input-box">
                         <span class="icon">●</span>
-                        <input type="text" placeholder="Masukkan username">
+                        <input type="text" name="username" value="{{ old('username') }}" placeholder="Masukkan username" required autocomplete="username">
                     </div>
+                    @error('username')
+                        <small style="color: red; display: block; margin-top: 4px;">{{ $message }}</small>
+                    @enderror
                 </div>
+
                 <div class="form-group">
                     <label>Password</label>
                     <div class="input-box">
                         <span class="icon">●</span>
-                        <input type="password" id="password" placeholder="Masukkan password">
+                        <input type="password" id="password" name="password" placeholder="Masukkan password" required autocomplete="current-password">
                         <span class="toggle-password" onclick="togglePassword()" id="toggleIcon">👁</span>
                     </div>
+                    @error('password')
+                        <small style="color: red; display: block; margin-top: 4px;">{{ $message }}</small>
+                    @enderror
                 </div>
-              <!-- Tombol Masuk langsung ke Dashboard Guru -->
-                <a href="{{ route('pilih-peran') }}" class="login-btn">Masuk</a>
+
+                <button type="submit" class="login-btn">Masuk</button>
             </form>
+
             <div class="footer">
                 © 2026 Bintang Poin | Sistem Poin Siswa<br>
                 SDIT Nurul Fikri Banjarmasin
             </div>
         </div>
     </div>
+
     <script>
         function togglePassword() {
             const password = document.getElementById('password');

@@ -11,26 +11,28 @@ class RelasiWaliSiswaController extends Controller
 {
     public function index()
     {
+        // Data dropdown pilihan wali murid
         $wali = Pengguna::where('peran', 'orang_tua')
             ->where('status', 'aktif')
             ->orderBy('nama')
             ->get();
 
+        // Data dropdown pilihan siswa
         $siswa = Siswa::with('kelas')
             ->orderBy('nama_lengkap')
             ->get();
 
-        $relasi = OrangTuaSiswa::with([
-            'pengguna',
-            'siswa.kelas'
-        ])
-        ->orderByDesc('dibuat_pada')
-        ->get();
+        // Mengambil Wali yang memiliki relasi, di-paginate 15 wali per halaman
+        $waliRelasi = Pengguna::whereHas('orangTuaSiswa')
+            ->with(['orangTuaSiswa.siswa.kelas'])
+            ->orderBy('nama')
+            ->paginate(15)
+            ->withQueryString();
 
         return view('guru.relasi', compact(
             'wali',
             'siswa',
-            'relasi'
+            'waliRelasi'
         ));
     }
 

@@ -46,18 +46,12 @@ class KenaikanKelasController extends Controller
                 }
 
                 $namaKelas = $item->kelas->nama_kelas;
-
-                // Ambil tingkat dari nama kelas
                 $tingkat = (int) preg_replace('/[^0-9]/', '', $namaKelas);
 
-                /*
-                |--------------------------------------------------------------------------
-                | KELAS 6 → LULUS
-                |--------------------------------------------------------------------------
-                */
+                // KELAS 6 -> LULUS
                 if ($tingkat === 6) {
                     ArsipAlumni::create([
-                        'siswa_id' => $item->id_siswa,
+                        'siswa_id' => $item->id_siswa ?? $item->id,
                         'nis' => $item->nis,
                         'nama_lengkap' => $item->nama_lengkap,
                         'kelas_terakhir' => $namaKelas,
@@ -76,15 +70,10 @@ class KenaikanKelasController extends Controller
                     continue;
                 }
 
-                /*
-                |--------------------------------------------------------------------------
-                | KELAS 5 → KELAS 6
-                |--------------------------------------------------------------------------
-                */
+                // KELAS 5 -> KELAS 6
                 if ($tingkat === 5) {
                     $suffix = substr($namaKelas, -1);
                     $kelasBaru = '6-' . $suffix;
-
                     $kelasTujuan = Kelas::where('nama_kelas', $kelasBaru)->first();
 
                     if ($kelasTujuan) {
@@ -92,22 +81,14 @@ class KenaikanKelasController extends Controller
                         $item->save();
                         $jumlahNaik++;
                     }
-
                     continue;
                 }
 
-                /*
-                |--------------------------------------------------------------------------
-                | KELAS 1 → 2
-                | KELAS 2 → 3
-                | KELAS 3 → 4
-                |--------------------------------------------------------------------------
-                */
-                if ($tingkat >= 1 && $tingkat <= 3) {
+                // KELAS 1 -> 2, 2 -> 3, 3 -> 4, 4 -> 5
+                if ($tingkat >= 1 && $tingkat <= 4) {
                     $tingkatBaru = $tingkat + 1;
                     $suffix = substr($namaKelas, -1);
                     $kelasBaru = $tingkatBaru . '-' . $suffix;
-
                     $kelasTujuan = Kelas::where('nama_kelas', $kelasBaru)->first();
 
                     if ($kelasTujuan) {
@@ -116,12 +97,6 @@ class KenaikanKelasController extends Controller
                         $jumlahNaik++;
                     }
                 }
-
-                /*
-                |--------------------------------------------------------------------------
-                | KELAS 4 TIDAK DIUBAH
-                |--------------------------------------------------------------------------
-                */
             }
 
             DB::commit();
@@ -132,41 +107,41 @@ class KenaikanKelasController extends Controller
 
         } catch (\Throwable $e) {
             DB::rollBack();
-
             return back()->with('error', 'Proses kenaikan kelas gagal: ' . $e->getMessage());
         }
     }
 
     /**
-     * Pemindahan siswa secara manual / plotting rombel
+     * Pemindahan siswa secara manual / plotting rombel (Nama method disesuaikan dengan Route: pindahkan)
      */
-    public function simpanPemindahan(Request $request)
+    public function pindahkan(Request $request)
     {
         $request->validate([
             'siswa' => ['required', 'array'],
             'siswa.*' => ['required', 'integer'],
             'kelas_tujuan' => ['required', 'integer', 'exists:kelas,id_kelas'],
-            'reset_poin' => ['nullable', 'boolean'],
+            'reset_poin' => ['nullable', 'in:0,1'],
         ]);
 
         DB::beginTransaction();
 
         try {
-            $siswa = Siswa::whereIn('id_siswa', $request->siswa)
+            $primaryKeyName = (new Siswa())->getKeyName();
+
+            $daftarSiswa = Siswa::whereIn($primaryKeyName, $request->siswa)
                 ->where('status', 'aktif')
                 ->get();
 
             $jumlah = 0;
 
-            foreach ($siswa as $item) {
+            foreach ($daftarSiswa as $item) {
                 $item->id_kelas = $request->kelas_tujuan;
 
-                if ($request->boolean('reset_poin')) {
+                if ($request->input('reset_poin') == '1') {
                     $item->poin_saat_ini = 250;
                 }
 
                 $item->save();
-
                 $jumlah++;
             }
 
@@ -178,7 +153,6 @@ class KenaikanKelasController extends Controller
 
         } catch (\Throwable $e) {
             DB::rollBack();
-
             return back()->with('error', 'Pemindahan siswa gagal: ' . $e->getMessage());
         }
     }

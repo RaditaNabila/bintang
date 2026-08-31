@@ -201,12 +201,7 @@
 
                 <tbody class="divide-y divide-gray-50" id="relationTableBody">
 
-                    @forelse($relasi->groupBy('pengguna_id') as $penggunaId => $items)
-
-                        @php
-                            $first = $items->first();
-                            $waliNama = $first->pengguna->nama ?? 'Nama Tidak Ditemukan';
-                        @endphp
+                    @forelse($waliRelasi as $w)
 
                         <tr class="hover:bg-gray-50/50">
 
@@ -215,15 +210,15 @@
                                 <div class="flex items-center gap-2.5">
 
                                     <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 font-bold text-xs flex items-center justify-center shrink-0">
-                                        {{ strtoupper(substr($waliNama, 0, 1)) }}
+                                        {{ strtoupper(substr($w->nama ?? 'W', 0, 1)) }}
                                     </div>
 
                                     <span>
-                                        {{ $waliNama }}
+                                        {{ $w->nama }}
 
-                                        @if(!empty($first->pengguna->username))
+                                        @if(!empty($w->username))
                                             <span class="text-xs text-gray-400 font-normal">
-                                                ({{ $first->pengguna->username }})
+                                                ({{ $w->username }})
                                             </span>
                                         @endif
                                     </span>
@@ -235,7 +230,7 @@
                             <td class="py-3.5 px-4">
                                 <div class="flex flex-wrap gap-1.5">
 
-                                    @foreach($items as $item)
+                                    @foreach($w->orangTuaSiswa as $item)
                                         <span class="px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200/60 rounded-lg text-xs font-medium flex items-center gap-1.5">
 
                                             <i class="fa-solid fa-user-graduate text-[10px]"></i>
@@ -251,8 +246,8 @@
 
                             {{-- STATUS --}}
                             <td class="py-3.5 px-4">
-                                <span class="px-2.5 py-1 {{ $items->count() > 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700' }} rounded-full text-xs font-medium">
-                                    {{ $items->count() }} Anak
+                                <span class="px-2.5 py-1 {{ $w->orangTuaSiswa->count() > 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700' }} rounded-full text-xs font-medium">
+                                    {{ $w->orangTuaSiswa->count() }} Anak
                                 </span>
                             </td>
 
@@ -260,7 +255,7 @@
                             <td class="py-3.5 px-4 text-center">
                                 <div class="flex items-center justify-center gap-1">
 
-                                    @foreach($items as $item)
+                                    @foreach($w->orangTuaSiswa as $item)
                                         <form
                                             action="{{ route('guru.relasi-wali-siswa.destroy', $item->id) }}"
                                             method="POST"
@@ -272,7 +267,7 @@
                                             <button
                                                 type="submit"
                                                 class="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 transition"
-                                                title="Putuskan Hubungan"
+                                                title="Putuskan Hubungan {{ $item->siswa->nama_lengkap ?? '' }}"
                                             >
                                                 <i class="fa-solid fa-trash-can"></i>
                                             </button>
@@ -298,6 +293,14 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- PAGINATION LINK --}}
+        @if($waliRelasi->hasPages())
+            <div class="pt-4 border-t border-gray-100">
+                {{ $waliRelasi->links() }}
+            </div>
+        @endif
+
     </div>
 
 </div>

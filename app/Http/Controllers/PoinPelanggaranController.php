@@ -46,7 +46,7 @@ class PoinPelanggaranController extends Controller
 
 
         // =====================================================
-        // DATA TRANSAKSI PELANGGARAN
+        // DATA TRANSAKSI PELANGGARAN (DENGAN PAGINASI)
         // =====================================================
 
         $transaksi = TransaksiPoin::with([
@@ -60,7 +60,8 @@ class PoinPelanggaranController extends Controller
             ->whereYear('tanggal_transaksi', $tahunFilter)
             ->orderByDesc('tanggal_transaksi')
             ->orderByDesc('id')
-            ->get();
+            ->paginate(10)
+            ->withQueryString();
 
 
         // =====================================================
@@ -76,9 +77,6 @@ class PoinPelanggaranController extends Controller
         // =====================================================
         // KATEGORI PELANGGARAN
         // =====================================================
-        // Diambil langsung dari tabel kategori.
-        // Tidak menggunakan tipe_pelanggaran.
-        // =====================================================
 
         $kategori = Kategori::where('jenis', 'pelanggaran')
             ->orderBy('id')
@@ -87,9 +85,6 @@ class PoinPelanggaranController extends Controller
 
         // =====================================================
         // ATURAN / JENIS PELANGGARAN
-        // =====================================================
-        // Mengambil semua aturan yang kategori_id-nya
-        // termasuk kategori pelanggaran.
         // =====================================================
 
         $aturanPelanggaran = AturanPoin::with('kategori')
@@ -191,9 +186,6 @@ class PoinPelanggaranController extends Controller
             // =================================================
             // AMBIL ATURAN PELANGGARAN
             // =================================================
-            // Pastikan aturan berasal dari kategori
-            // yang jenisnya adalah "pelanggaran".
-            // =================================================
 
             $aturan = AturanPoin::with('kategori')
                 ->where('id', $validated['aturan_poin_id'])
@@ -237,10 +229,7 @@ class PoinPelanggaranController extends Controller
                 'kategori_id' => $aturan->kategori_id,
                 'aturan_poin_id' => $aturan->id,
                 'jenis' => 'pelanggaran',
-
-                // Poin disimpan sebagai nilai positif
                 'poin' => $poin,
-
                 'keterangan' => $validated['keterangan'],
                 'sanksi' => $validated['sanksi'] ?? null,
                 'tanggal_transaksi' => $validated['tanggal_transaksi'],
@@ -278,37 +267,18 @@ class PoinPelanggaranController extends Controller
     {
         DB::transaction(function () use ($id) {
 
-            // =================================================
-            // AMBIL TRANSAKSI
-            // =================================================
-
             $transaksi = TransaksiPoin::lockForUpdate()
                 ->where('jenis', 'pelanggaran')
                 ->findOrFail($id);
 
-
-            // =================================================
-            // AMBIL SISWA
-            // =================================================
-
             $siswa = Siswa::lockForUpdate()
                 ->findOrFail($transaksi->siswa_id);
-
-
-            // =================================================
-            // KEMBALIKAN POIN SISWA
-            // =================================================
 
             $siswa->poin_saat_ini =
                 ($siswa->poin_saat_ini ?? 0)
                 + abs((int) $transaksi->poin);
 
             $siswa->save();
-
-
-            // =================================================
-            // HAPUS TRANSAKSI
-            // =================================================
 
             $transaksi->delete();
         });

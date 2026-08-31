@@ -4,65 +4,45 @@ namespace App\Http\Controllers;
 
 use App\Models\Pengguna;
 use App\Models\OrangTuaSiswa;
+use App\Models\Siswa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class OrangTuaController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil ID akun orang tua dari session
-        $penggunaId = session('pengguna_id');
+        // 1. Ambil data user yang sedang login via Auth Laravel
+        $orangTua = Auth::user();
 
-        // Jika belum login
-        if (!$penggunaId) {
+        // Jika belum login atau bukan orang tua / wali
+        if (!$orangTua || !in_array($orangTua->peran, ['orang_tua', 'wali'])) {
             return redirect()
-                ->route('pilih-peran')
-                ->with('error', 'Silakan login terlebih dahulu.');
-        }
-
-        // Ambil akun orang tua
-        $orangTua = Pengguna::where('id', $penggunaId)
-            ->where('peran', 'orang_tua')
-            ->where('status', 'aktif')
-            ->first();
-
-        // Jika akun tidak ditemukan
-        if (!$orangTua) {
-            return redirect()
-                ->route('pilih-peran')
-                ->with('error', 'Akun orang tua tidak ditemukan atau tidak aktif.');
+                ->route('welcome')
+                ->with('error', 'Silakan login sebagai orang tua/wali terlebih dahulu.');
         }
 
         /*
         |--------------------------------------------------------------------------
-        | AMBIL SEMUA ANAK YANG TERHUBUNG DENGAN WALI
+        | AMBIL SEMUA ANTA KUNCI SISWA_ID MILIK WALI YANG LOGIN
         |--------------------------------------------------------------------------
         */
+        $siswaIds = OrangTuaSiswa::where('pengguna_id', $orangTua->id)
+            ->pluck('siswa_id');
 
-        $relasi = OrangTuaSiswa::with([
-            'siswa.kelas',
-            'siswa.transaksiPoin'
-        ])
-        ->where('pengguna_id', $orangTua->id)
-        ->get();
-
-        $anak = $relasi
-            ->map(function ($item) {
-                return $item->siswa;
-            })
-            ->filter()
-            ->values();
+        // Tarik data siswa berdasarkan ID yang benar dari tabel relasi
+        $anak = Siswa::with(['kelas', 'transaksiPoin'])
+            ->whereIn('id', $siswaIds)
+            ->get();
 
         /*
         |--------------------------------------------------------------------------
         | TENTUKAN ANAK YANG DIPILIH
         |--------------------------------------------------------------------------
         */
-
         $siswaId = $request->get('siswa_id');
 
         if ($siswaId) {
-
             // Pastikan siswa memang anak dari wali yang sedang login
             $siswa = $anak->firstWhere('id', $siswaId);
 
@@ -71,23 +51,20 @@ class OrangTuaController extends Controller
                     ->route('wali')
                     ->with('error', 'Data siswa tidak ditemukan.');
             }
-
         } else {
-
-            // Jika belum memilih anak, tampilkan anak pertama
+            // Tampilkan anak pertama dari hasil query yang valid (Fajar)
             $siswa = $anak->first();
         }
 
         /*
         |--------------------------------------------------------------------------
-        | JIKA WALI BELUM MEMILIKI ANAK
+        | JIKA WALI BELUM MEMILIKI ANAK / BELUM DIRELASIKAN
         |--------------------------------------------------------------------------
         */
-
         if (!$siswa) {
             return view('wali', [
                 'orangTua'           => $orangTua,
-                'anak'               => $anak,
+                'anak'               => collect(),
                 'siswa'              => null,
                 'totalScore'         => 250,
                 'totalPrestasi'      => 0,
@@ -103,17 +80,15 @@ class OrangTuaController extends Controller
         | AMBIL TRANSAKSI POIN SISWA
         |--------------------------------------------------------------------------
         */
-
         $riwayatPoin = $siswa->transaksiPoin
-            ->sortByDesc('tanggal_transaksi')
-            ->values();
+            ? $siswa->transaksiPoin->sortByDesc('tanggal_transaksi')->values()
+            : collect();
 
         /*
         |--------------------------------------------------------------------------
         | HITUNG TOTAL PRESTASI DAN PELANGGARAN
         |--------------------------------------------------------------------------
         */
-
         $totalPrestasi = $riwayatPoin
             ->where('jenis', 'apresiasi')
             ->sum('poin');
@@ -132,27 +107,17 @@ class OrangTuaController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | HITUNG POIN AKHIR
+        | HITUNG POIN AKHIR (Awal 250 + Prestasi - Pelanggaran)
         |--------------------------------------------------------------------------
-        |
-        | Poin awal = 250
-        | Apresiasi   = menambah poin
-        | Pelanggaran  = mengurangi poin
-        |
         */
-
         $poinAwal = 250;
-
-        $totalScore = $poinAwal
-            + $totalPrestasi
-            - $totalPelanggaran;
+        $totalScore = $poinAwal + $totalPrestasi - $totalPelanggaran;
 
         /*
         |--------------------------------------------------------------------------
         | RETURN VIEW
         |--------------------------------------------------------------------------
         */
-
         return view('wali', [
             'orangTua'           => $orangTua,
             'anak'               => $anak,
