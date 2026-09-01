@@ -149,7 +149,7 @@
     {{-- TABEL DAFTAR RELASI --}}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
 
-        {{-- HEADER TABEL --}}
+        {{-- HEADER TABEL & SEARCH SERVER-SIDE --}}
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
                 <h3 class="font-bold text-gray-800 text-base">
@@ -161,18 +161,18 @@
                 </p>
             </div>
 
-            {{-- SEARCH --}}
-            <div class="relative w-full sm:w-64">
+            {{-- SEARCH FORM (GET) - Diperbaiki menggunakan .index --}}
+            <form method="GET" action="{{ route('guru.relasi-wali-siswa.index') }}" class="relative w-full sm:w-64">
                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"></i>
 
                 <input
                     type="text"
-                    id="relationSearch"
-                    onkeyup="filterRelations()"
+                    name="search"
+                    value="{{ request('search') }}"
                     placeholder="Cari nama wali atau siswa..."
-                    class="w-full pl-8 pr-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    class="w-full pl-8 pr-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 bg-gray-50 focus:bg-white transition"
                 >
-            </div>
+            </form>
         </div>
 
         {{-- TABLE --}}
@@ -294,10 +294,10 @@
             </table>
         </div>
 
-        {{-- PAGINATION LINK --}}
+        {{-- PAGINATION LINK (Dengan Query String agar parameter pencarian tetap terbawa) --}}
         @if($waliRelasi->hasPages())
             <div class="pt-4 border-t border-gray-100">
-                {{ $waliRelasi->links() }}
+                {{ $waliRelasi->appends(request()->query())->links() }}
             </div>
         @endif
 
@@ -330,15 +330,5 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
-
-function filterRelations() {
-    const input = document.getElementById('relationSearch').value.toLowerCase().trim();
-    const rows = document.querySelectorAll('#relationTableBody tr');
-
-    rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(input) ? '' : 'none';
-    });
-}
 </script>
 @endpush

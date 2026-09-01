@@ -74,13 +74,11 @@
             @if($currentTingkat !== 'all')
                 <span class="text-xs font-medium text-gray-400 mr-1 shrink-0">Pilih Rombel:</span>
 
-                {{-- Tombol Semua Rombel --}}
                 <a href="{{ route('guru.data-siswa', array_filter(['tingkat' => $currentTingkat, 'search' => $currentSearch])) }}"
                    class="sub-btn px-3 py-1.5 rounded-lg text-xs {{ $currentKelasId === 'all' ? 'font-bold bg-amber-100 text-amber-800' : 'font-medium bg-gray-50 text-gray-600 hover:bg-gray-100' }} transition shrink-0">
                     Semua (Kelas {{ $currentTingkat }})
                 </a>
 
-                {{-- List Rombel Sesuai Tingkat Yang Dipilih --}}
                 @foreach($kelas as $item)
                     @if((string)$item->tingkat === (string)$currentTingkat)
                         @php
@@ -173,7 +171,7 @@
         </table>
     </div>
 
-    <!-- Paginasi Rata Kanan-Kiri (Justified) -->
+    <!-- Paginasi -->
     <div class="mt-4 pt-4 border-t border-gray-100 [&>nav]:w-full [&>nav]:flex [&>nav]:items-center [&>nav]:justify-between">
         {{ $siswa->links() }}
     </div>
@@ -195,13 +193,67 @@
         <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto" id="classListContent"></div>
 
         <div class="p-4 bg-gray-50 border-t flex justify-between items-center">
-            <button type="button" onclick="promptAddNewRoom()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition shadow-sm">
+            <button type="button" onclick="openAddRoomModal()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition shadow-sm">
                 <i class="fa-solid fa-plus"></i>
                 Tambah Ruangan Baru
             </button>
             <button type="button" onclick="closeClassListModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-xs font-medium transition">
                 Tutup
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tambah Ruangan Kelas Baru -->
+<div id="addRoomModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-[60] p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
+        <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4 text-white flex justify-between items-center">
+            <h3 class="font-bold text-base">Tambah Ruangan Kelas</h3>
+            <button type="button" onclick="closeAddRoomModal()" class="text-white/80 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form id="addRoomForm" action="{{ route('guru.data-siswa.kelas.store') }}" method="POST" class="p-6 space-y-4">
+            @csrf
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Tingkat Kelas</label>
+                <select name="tingkat" id="roomTingkat" required class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
+                    <option value="">-- Pilih Tingkat --</option>
+                    @for($i = 1; $i <= 6; $i++)
+                        <option value="{{ $i }}">Kelas {{ $i }}</option>
+                    @endfor
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Ruangan / Rombel</label>
+                <input type="text" name="nama_kelas" id="roomName" required placeholder="Contoh: Otomatis A/B/C..." class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 bg-gray-50">
+                <p class="text-[10px] text-gray-400 mt-1">Otomatis mendeteksi abjad selanjutnya (Misal: sudah ada C, otomatis jadi D).</p>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t">
+                <button type="button" onclick="closeAddRoomModal()" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-200 transition">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-bold hover:bg-amber-600 transition">Simpan Ruangan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus Ruangan Kelas -->
+<div id="deleteRoomModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-[60] p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden text-center p-6 space-y-4">
+        <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-xl">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+            <h3 class="font-bold text-base text-gray-800">Hapus Ruangan Kelas?</h3>
+            <p class="text-xs text-gray-500 mt-1">Anda akan menghapus <span id="deleteRoomNameLabel" class="font-bold text-gray-700"></span>.</p>
+        </div>
+        <div class="flex items-center justify-center gap-2 pt-2">
+            <button type="button" onclick="closeDeleteRoomModal()" class="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition">Batal</button>
+            <form id="deleteRoomForm" method="POST" class="w-full">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="w-full px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md transition">Ya, Hapus</button>
+            </form>
         </div>
     </div>
 </div>
@@ -262,16 +314,11 @@
                     <input type="number" name="poin_saat_ini" id="inputPoin" required min="0" value="250" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-xs font-bold text-emerald-600 focus:outline-none focus:border-amber-500">
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-gray-400">Poin Default</span>
                 </div>
-                <p class="text-[10px] text-gray-400 mt-1">*Poin standar siswa baru adalah 250.</p>
             </div>
 
             <div class="flex justify-end gap-2 pt-4 border-t">
-                <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-200 transition">
-                    Batal
-                </button>
-                <button type="submit" class="px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-medium hover:bg-amber-600 transition">
-                    Simpan
-                </button>
+                <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-200 transition">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-medium hover:bg-amber-600 transition">Simpan</button>
             </div>
         </form>
     </div>
@@ -324,14 +371,41 @@
         </div>
 
         <div class="p-4 bg-gray-50 border-t flex justify-end gap-2">
-            <button type="button" onclick="closeResetSemesterModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-xs font-medium transition">
-                Batal
-            </button>
+            <button type="button" onclick="closeResetSemesterModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-xs font-medium transition">Batal</button>
             <button type="button" onclick="executeResetSemester()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
                 <i class="fa-solid fa-check-double"></i>
                 Jalankan Reset Poin
             </button>
         </div>
+    </div>
+</div>
+
+<!-- Modal Kustom Konfirmasi Pemindahan Siswa (Pengganti Confirm Bawaan Browser) -->
+<div id="transferStudentModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-[70] p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden text-center p-6 space-y-4">
+        <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-xl">
+            <i class="fa-solid fa-right-left"></i>
+        </div>
+        <div>
+            <h3 class="font-bold text-base text-gray-800">Konfirmasi Pemindahan</h3>
+            <p id="transferStudentMessage" class="text-xs text-gray-500 mt-1 leading-relaxed"></p>
+        </div>
+        <div class="flex items-center justify-center gap-2 pt-2">
+            <button type="button" onclick="closeTransferModal()" class="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition">Batal</button>
+            <button type="button" id="transferConfirmBtn" class="w-full px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md transition">Ya, Pindahkan</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Kustom Notifikasi / Peringatan Umum -->
+<div id="customAlertModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-[70] p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden text-center p-6 space-y-4">
+        <div id="customAlertIcon" class="w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl"></div>
+        <div>
+            <h3 id="customAlertTitle" class="font-bold text-base text-gray-800">Pemberitahuan</h3>
+            <p id="customAlertMessage" class="text-xs text-gray-500 mt-1 whitespace-pre-line"></p>
+        </div>
+        <div id="customAlertButtons" class="flex items-center justify-center gap-2 pt-2"></div>
     </div>
 </div>
 
@@ -350,19 +424,14 @@
 
         <form id="archiveStudentForm" method="POST" class="p-6 space-y-4">
             @csrf
-
             <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl">
                 <p class="text-xs text-gray-500">Siswa yang akan diarsipkan:</p>
                 <p id="archiveStudentName" class="font-bold text-gray-800 mt-1">-</p>
             </div>
 
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-2">
-                    Status Arsip
-                </label>
-
-                <select name="jenis_arsip" id="archiveType" required
-                    class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
+                <label class="block text-xs font-semibold text-gray-700 mb-2">Status Arsip</label>
+                <select name="jenis_arsip" id="archiveType" required class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
                     <option value="">-- Pilih Status --</option>
                     <option value="pindah">Pindah / Keluar</option>
                     <option value="lulus">Lulus / Alumni</option>
@@ -370,41 +439,18 @@
             </div>
 
             <div id="graduationYearField" class="hidden">
-                <label class="block text-xs font-semibold text-gray-700 mb-1">
-                    Tahun Kelulusan
-                </label>
-                <input type="text" name="tahun_kelulusan" id="archiveYear"
-                    placeholder="Contoh: 2026"
-                    maxlength="4"
-                    class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Tahun Kelulusan</label>
+                <input type="text" name="tahun_kelulusan" id="archiveYear" placeholder="Contoh: 2026" maxlength="4" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500">
             </div>
 
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">
-                    Catatan
-                </label>
-                <textarea name="catatan_status" id="archiveNote"
-                    rows="3"
-                    placeholder="Contoh: Pindah ke sekolah lain..."
-                    class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500"></textarea>
-            </div>
-
-            <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-[11px] text-blue-700">
-                <i class="fa-solid fa-circle-info mr-1"></i>
-                Setelah diarsipkan, siswa <strong>tidak akan tampil lagi</strong> di Data Siswa aktif dan dapat dilihat melalui menu Arsip.
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Catatan</label>
+                <textarea name="catatan_status" id="archiveNote" rows="3" placeholder="Contoh: Pindah ke sekolah lain..." class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500"></textarea>
             </div>
 
             <div class="flex justify-end gap-2 pt-4 border-t">
-                <button type="button" onclick="closeArchiveModal()"
-                    class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-200">
-                    Batal
-                </button>
-
-                <button type="submit"
-                    class="px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-bold hover:bg-amber-600">
-                    <i class="fa-solid fa-box-archive mr-1"></i>
-                    Arsipkan Siswa
-                </button>
+                <button type="button" onclick="closeArchiveModal()" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-200">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-bold hover:bg-amber-600"><i class="fa-solid fa-box-archive mr-1"></i> Arsipkan Siswa</button>
             </div>
         </form>
     </div>
@@ -429,6 +475,80 @@
 
 <script>
 const kelasDatabase = @json($kelasData);
+
+function showCustomAlert(title, message, type = 'warning', callback = null) {
+    const modal = document.getElementById('customAlertModal');
+    const iconContainer = document.getElementById('customAlertIcon');
+    const titleEl = document.getElementById('customAlertTitle');
+    const msgEl = document.getElementById('customAlertMessage');
+    const btnContainer = document.getElementById('customAlertButtons');
+
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+
+    if (type === 'warning') {
+        iconContainer.className = 'w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-xl';
+        iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+    } else if (type === 'danger') {
+        iconContainer.className = 'w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-xl';
+        iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+    } else {
+        iconContainer.className = 'w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-xl';
+        iconContainer.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
+    }
+
+    if (callback) {
+        btnContainer.innerHTML = `
+            <button type="button" onclick="closeCustomAlert()" class="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition">Batal</button>
+            <button type="button" id="customAlertConfirmBtn" class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md transition">Ya, Lanjutkan</button>
+        `;
+        document.getElementById('customAlertConfirmBtn').onclick = function() {
+            closeCustomAlert();
+            callback();
+        };
+    } else {
+        btnContainer.innerHTML = `
+            <button type="button" onclick="closeCustomAlert()" class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md transition">Mengerti</button>
+        `;
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeCustomAlert() {
+    const modal = document.getElementById('customAlertModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+// Fungsi Modal Kustom Pemindahan Siswa (Pengganti confirm())
+function openTransferModal(totalSiswa, targetKelasName, callback) {
+    const modal = document.getElementById('transferStudentModal');
+    const msgEl = document.getElementById('transferStudentMessage');
+    const confirmBtn = document.getElementById('transferConfirmBtn');
+
+    if (!modal || !msgEl || !confirmBtn) return;
+
+    msgEl.innerHTML = `Yakin ingin memindahkan <span class="font-bold text-gray-800">${totalSiswa} siswa terpilih</span> ke <span class="font-bold text-amber-600">${targetKelasName}</span>?`;
+
+    // Pasang aksi callback saat tombol konfirmasi diklik
+    confirmBtn.onclick = function() {
+        closeTransferModal();
+        if (typeof callback === 'function') callback();
+    };
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeTransferModal() {
+    const modal = document.getElementById('transferStudentModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
 
 function openModal(mode, nisn = '', nama = '', kelasId = '', gender = 'Laki-laki', poin = 250, studentId = '') {
     const modal = document.getElementById('studentModal');
@@ -476,13 +596,9 @@ function archiveStudent(id, nama) {
     const archiveNote = document.getElementById('archiveNote');
     const graduationField = document.getElementById('graduationYearField');
 
-    if (!modal || !form || !nameElement) {
-        console.error('Modal arsip tidak ditemukan.');
-        return;
-    }
+    if (!modal || !form || !nameElement) return;
 
     nameElement.textContent = nama;
-
     form.action = "{{ url('/guru/data-siswa') }}/" + id + "/arsip";
 
     archiveType.value = '';
@@ -498,7 +614,6 @@ function archiveStudent(id, nama) {
 
 function closeArchiveModal() {
     const modal = document.getElementById('archiveStudentModal');
-
     if (modal) {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
@@ -507,7 +622,6 @@ function closeArchiveModal() {
 
 document.getElementById('archiveType')?.addEventListener('change', function() {
     const graduationField = document.getElementById('graduationYearField');
-
     if (this.value === 'lulus') {
         graduationField.classList.remove('hidden');
         document.getElementById('archiveYear').required = true;
@@ -539,7 +653,7 @@ function executeResetSemester() {
     const confirmation = document.getElementById('confirmResetInput').value.trim();
 
     if (confirmation !== 'RESET') {
-        alert('Kata konfirmasi salah! Silakan ketik RESET dengan huruf kapital.');
+        showCustomAlert('Konfirmasi Salah', 'Kata konfirmasi salah! Silakan ketik RESET dengan huruf kapital.', 'warning');
         return;
     }
 
@@ -555,17 +669,29 @@ function executeResetSemester() {
         });
 
         if (ids.length === 0) {
-            alert('Tidak ada siswa yang ditemukan pada halaman saat ini.');
+            showCustomAlert('Data Kosong', 'Tidak ada siswa yang ditemukan pada halaman saat ini.', 'warning');
             return;
         }
     }
+
+    closeResetSemesterModal();
 
     if (scope === 'all') {
-        if (!confirm('PERINGATAN!\n\nPoin SELURUH siswa aktif akan direset menjadi 250.\n\nApakah Anda yakin ingin melanjutkan?')) {
-            return;
-        }
+        showCustomAlert(
+            'Konfirmasi Reset Poin',
+            'PERINGATAN!\n\nPoin SELURUH siswa aktif akan direset menjadi 250.\n\nApakah Anda yakin ingin melanjutkan?',
+            'danger',
+            function() {
+                submitResetForm(scope, ids);
+            }
+        );
+        return;
     }
 
+    submitResetForm(scope, ids);
+}
+
+function submitResetForm(scope, ids) {
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = "{{ route('guru.data-siswa.reset-poin') }}";
@@ -647,58 +773,98 @@ function renderClassListModal() {
 }
 
 function deleteRoom(id, namaKelas) {
-    if (confirm(`Apakah Anda yakin ingin menghapus ruangan kelas "${namaKelas}"?\n\nPerhatian: Menghapus ruangan ini dapat mempengaruhi data siswa yang terdaftar di dalamnya.`)) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/guru/data-siswa/kelas/${id}`;
+    const modal = document.getElementById('deleteRoomModal');
+    document.getElementById('deleteRoomForm').action = `/guru/data-siswa/kelas/${id}`;
+    document.getElementById('deleteRoomNameLabel').textContent = `"${namaKelas}"`;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
+function closeDeleteRoomModal() {
+    const modal = document.getElementById('deleteRoomModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
 
-        form.innerHTML = `
-            <input type="hidden" name="_token" value="${csrfToken}">
-            <input type="hidden" name="_method" value="DELETE">
-        `;
-
-        document.body.appendChild(form);
-        form.submit();
+function openAddRoomModal() {
+    document.getElementById('roomTingkat').value = '';
+    document.getElementById('roomName').value = '';
+    const modal = document.getElementById('addRoomModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
     }
 }
 
-function promptAddNewRoom() {
-    const tingkat = prompt('Masukkan tingkat kelas (1-6):');
-    if (tingkat === null) return;
-
-    const tingkatNumber = parseInt(tingkat);
-    if (isNaN(tingkatNumber) || tingkatNumber < 1 || tingkatNumber > 6) {
-        alert('Tingkat kelas harus berupa angka 1 sampai 6.');
-        return;
+function closeAddRoomModal() {
+    const modal = document.getElementById('addRoomModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
     }
-
-    let namaKelas = prompt('Masukkan nama ruangan kelas:\nContoh: Kelas 6D atau 6D');
-    if (namaKelas === null || namaKelas.trim() === '') {
-        alert('Nama ruangan kelas wajib diisi.');
-        return;
-    }
-
-    namaKelas = namaKelas.trim();
-    if (!namaKelas.toLowerCase().startsWith('kelas')) {
-        namaKelas = 'Kelas ' + namaKelas;
-    }
-
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = "{{ route('guru.data-siswa.kelas.store') }}";
-
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
-
-    form.innerHTML = `
-        <input type="hidden" name="_token" value="${csrfToken}">
-        <input type="hidden" name="tingkat" value="${tingkatNumber}">
-        <input type="hidden" name="nama_kelas" value="${namaKelas}">
-    `;
-
-    document.body.appendChild(form);
-    form.submit();
 }
+
+// Fitur Otomatis Menentukan Abjad Rombel Berikutnya
+document.getElementById('roomTingkat')?.addEventListener('change', function() {
+    const selectedTingkat = this.value;
+    const roomNameInput = document.getElementById('roomName');
+
+    if (!selectedTingkat) {
+        roomNameInput.value = '';
+        return;
+    }
+
+    const existingClasses = kelasDatabase.filter(item => String(item.tingkat) === String(selectedTingkat));
+
+    if (existingClasses.length === 0) {
+        roomNameInput.value = `Kelas ${selectedTingkat}A`;
+    } else {
+        let maxCharCode = 64;
+
+        existingClasses.forEach(item => {
+            const cleanName = item.nama_kelas.replace(/^kelas\s*\d+/i, '').trim();
+            if (cleanName.length > 0) {
+                const lastChar = cleanName.charAt(cleanName.length - 1).toUpperCase();
+                const code = lastChar.charCodeAt(0);
+                if (code >= 65 && code <= 90) {
+                    if (code > maxCharCode) {
+                        maxCharCode = code;
+                    }
+                }
+            }
+        });
+
+        let nextLetter = 'A';
+        if (maxCharCode >= 65 && maxCharCode < 90) {
+            nextLetter = String.fromCharCode(maxCharCode + 1);
+        }
+
+        roomNameInput.value = `Kelas ${selectedTingkat}${nextLetter}`;
+    }
+});
+
+document.addEventListener('click', function(e) {
+    if (e.target === document.getElementById('studentModal')) closeModal();
+    if (e.target === document.getElementById('classListModal')) closeClassListModal();
+    if (e.target === document.getElementById('resetSemesterModal')) closeResetSemesterModal();
+    if (e.target === document.getElementById('archiveStudentModal')) closeArchiveModal();
+    if (e.target === document.getElementById('deleteRoomModal')) closeDeleteRoomModal();
+    if (e.target === document.getElementById('customAlertModal')) closeCustomAlert();
+    if (e.target === document.getElementById('transferStudentModal')) closeTransferModal();
+    if (e.target === document.getElementById('addRoomModal')) closeAddRoomModal();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModal();
+        closeClassListModal();
+        closeResetSemesterModal();
+        closeArchiveModal();
+        closeDeleteRoomModal();
+        closeCustomAlert();
+        closeTransferModal();
+        closeAddRoomModal();
+    }
+});
 </script>
 @endpush

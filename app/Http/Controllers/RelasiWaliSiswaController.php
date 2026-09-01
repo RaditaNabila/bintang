@@ -9,8 +9,10 @@ use Illuminate\Http\Request;
 
 class RelasiWaliSiswaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->get('search');
+
         // Data dropdown pilihan wali murid
         $wali = Pengguna::where('peran', 'orang_tua')
             ->where('status', 'aktif')
@@ -22,9 +24,20 @@ class RelasiWaliSiswaController extends Controller
             ->orderBy('nama_lengkap')
             ->get();
 
-        // Mengambil Wali yang memiliki relasi, di-paginate 15 wali per halaman
+        // Mengambil Wali yang memiliki relasi dengan filter pencarian lintas halaman
         $waliRelasi = Pengguna::whereHas('orangTuaSiswa')
             ->with(['orangTuaSiswa.siswa.kelas'])
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%")
+                      // Jika kolom di database Anda menggunakan 'nama_pengguna', ganti di bawah ini.
+                      // Jika menggunakan 'username', sesuaikan. Berdasarkan error, kita pakai 'nama_pengguna' atau hapus baris orWhere ini jika tidak ada kolom username/nama_pengguna.
+                      ->orWhere('nama_pengguna', 'like', "%{$search}%")
+                      ->orWhereHas('orangTuaSiswa.siswa', function ($subQuery) use ($search) {
+                          $subQuery->where('nama_lengkap', 'like', "%{$search}%");
+                      });
+                });
+            })
             ->orderBy('nama')
             ->paginate(15)
             ->withQueryString();

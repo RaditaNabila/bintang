@@ -57,7 +57,7 @@
         </h3>
 
         <p class="text-xs text-gray-500 mt-1">
-            Pilih kelas asal, pilih rombel, centang siswa yang ingin dipindahkan, lalu tentukan rombel tujuan.
+            Mulai dari Kelas 6 untuk diluluskan terlebih dahulu, lalu lanjutkan dari Kelas 5 ke Kelas 6 dan seterusnya agar data tidak bertumpuk.
         </p>
     </div>
 
@@ -65,7 +65,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-            {{-- KELAS ASAL --}}
+            {{-- KELAS ASAL (Default diset ke Kelas 6 agar pertama kali buka langsung menu kelulusan) --}}
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">
                     1. Pilih Tingkat Kelas Asal
@@ -79,9 +79,9 @@
                     <option value="1">Kelas 1</option>
                     <option value="2">Kelas 2</option>
                     <option value="3">Kelas 3</option>
-                    <option value="4" selected>Kelas 4</option>
+                    <option value="4">Kelas 4</option>
                     <option value="5">Kelas 5</option>
-                    <option value="6">Kelas 6</option>
+                    <option value="6" selected>Kelas 6</option>
 
                 </select>
             </div>
@@ -260,6 +260,18 @@
 
 </div>
 
+<!-- Modal Kustom Pengganti Alert/Confirm Bawaan Browser -->
+<div id="customModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-[70] p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden text-center p-6 space-y-4">
+        <div id="customModalIcon" class="w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl"></div>
+        <div>
+            <h3 id="customModalTitle" class="font-bold text-base text-gray-800">Pemberitahuan</h3>
+            <p id="customModalMessage" class="text-xs text-gray-500 mt-1 leading-relaxed"></p>
+        </div>
+        <div id="customModalButtons" class="flex items-center justify-center gap-2 pt-2"></div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -309,6 +321,64 @@ document.addEventListener('DOMContentLoaded', function () {
     onTingkatChange();
 
 });
+
+/*
+|--------------------------------------------------------------------------
+| MODAL KUSTOM (PENGGANTI ALERT & CONFIRM)
+|--------------------------------------------------------------------------
+*/
+function showModal(title, message, type = 'warning', callback = null) {
+    const modal = document.getElementById('customModal');
+    const iconContainer = document.getElementById('customModalIcon');
+    const titleEl = document.getElementById('customModalTitle');
+    const msgEl = document.getElementById('customModalMessage');
+    const btnContainer = document.getElementById('customModalButtons');
+
+    if (!modal) return;
+
+    titleEl.textContent = title;
+    msgEl.textContent = message;
+
+    if (type === 'warning') {
+        iconContainer.className = 'w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-xl';
+        iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+    } else if (type === 'danger') {
+        iconContainer.className = 'w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-xl';
+        iconContainer.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+    } else if (type === 'success') {
+        iconContainer.className = 'w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl';
+        iconContainer.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+    } else {
+        iconContainer.className = 'w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-xl';
+        iconContainer.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
+    }
+
+    if (callback) {
+        btnContainer.innerHTML = `
+            <button type="button" onclick="closeCustomModal()" class="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition">Batal</button>
+            <button type="button" id="customModalConfirmBtn" class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md transition">Ya, Lanjutkan</button>
+        `;
+        document.getElementById('customModalConfirmBtn').onclick = function() {
+            closeCustomModal();
+            callback();
+        };
+    } else {
+        btnContainer.innerHTML = `
+            <button type="button" onclick="closeCustomModal()" class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md transition">Mengerti</button>
+        `;
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeCustomModal() {
+    const modal = document.getElementById('customModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
 
 
 /*
@@ -750,9 +820,7 @@ function simpanPemindahan() {
 
     if (checkedBoxes.length === 0) {
 
-        alert(
-            'Silakan centang minimal satu siswa.'
-        );
+        showModal('Perhatian', 'Silakan centang minimal satu siswa terlebih dahulu.', 'warning');
 
         return;
 
@@ -779,64 +847,14 @@ function simpanPemindahan() {
 
     if (tingkat === '6') {
 
-        if (!confirm(
-            `Yakin ingin meluluskan ${checkedBoxes.length} siswa terpilih dan memasukkannya ke Arsip Alumni?`
-        )) {
-
-            return;
-
-        }
-
-
-        const selectedStudents =
-            document.getElementById(
-                'selectedStudents'
-            );
-
-        selectedStudents.innerHTML = '';
-
-
-        checkedBoxes.forEach(function (checkbox) {
-
-            const input =
-                document.createElement('input');
-
-            input.type = 'hidden';
-
-            input.name = 'siswa[]';
-
-            input.value =
-                checkbox.value;
-
-            selectedStudents.appendChild(input);
-
-        });
-
-
-        document.getElementById(
-            'aksiInput'
-        ).value = 'lulus';
-
-
-        document.getElementById(
-            'kelasTujuanInput'
-        ).value = '';
-
-
-        document.getElementById(
-            'resetPoinInput'
-        ).value =
-            document.getElementById(
-                'resetPoin'
-            ).checked
-                ? '1'
-                : '0';
-
-
-        document.getElementById(
-            'formPemindahan'
-        ).submit();
-
+        showModal(
+            'Konfirmasi Kelulusan',
+            `Yakin ingin meluluskan ${checkedBoxes.length} siswa terpilih dan memasukkannya ke Arsip Alumni?`,
+            'danger',
+            function() {
+                executeSubmitAction('lulus', '');
+            }
+        );
 
         return;
     }
@@ -856,9 +874,7 @@ function simpanPemindahan() {
 
     if (!targetId) {
 
-        alert(
-            'Silakan pilih rombel tujuan terlebih dahulu.'
-        );
+        showModal('Perhatian', 'Silakan pilih rombel tujuan terlebih dahulu.', 'warning');
 
         return;
 
@@ -877,65 +893,36 @@ function simpanPemindahan() {
             : '';
 
 
-    if (!confirm(
-        `Yakin ingin memindahkan ${checkedBoxes.length} siswa terpilih ke ${targetName}?`
-    )) {
+    showModal(
+        'Konfirmasi Pemindahan',
+        `Yakin ingin memindahkan ${checkedBoxes.length} siswa terpilih ke ${targetName}?`,
+        'warning',
+        function() {
+            executeSubmitAction('pindah', targetId);
+        }
+    );
 
-        return;
+}
 
-    }
-
-
-    const selectedStudents =
-        document.getElementById(
-            'selectedStudents'
-        );
-
+function executeSubmitAction(aksi, targetId) {
+    const checkedBoxes = document.querySelectorAll('.cb-siswa:checked');
+    const selectedStudents = document.getElementById('selectedStudents');
     selectedStudents.innerHTML = '';
 
-
     checkedBoxes.forEach(function (checkbox) {
-
-        const input =
-            document.createElement('input');
-
+        const input = document.createElement('input');
         input.type = 'hidden';
-
         input.name = 'siswa[]';
-
-        input.value =
-            checkbox.value;
-
+        input.value = checkbox.value;
         selectedStudents.appendChild(input);
-
     });
 
+    document.getElementById('aksiInput').value = aksi;
+    document.getElementById('kelasTujuanInput').value = targetId;
+    document.getElementById('resetPoinInput').value =
+        document.getElementById('resetPoin').checked ? '1' : '0';
 
-    document.getElementById(
-        'aksiInput'
-    ).value = 'pindah';
-
-
-    document.getElementById(
-        'kelasTujuanInput'
-    ).value =
-        targetId;
-
-
-    document.getElementById(
-        'resetPoinInput'
-    ).value =
-        document.getElementById(
-            'resetPoin'
-        ).checked
-            ? '1'
-            : '0';
-
-
-    document.getElementById(
-        'formPemindahan'
-    ).submit();
-
+    document.getElementById('formPemindahan').submit();
 }
 
 </script>

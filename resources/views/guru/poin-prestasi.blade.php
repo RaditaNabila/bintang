@@ -280,13 +280,9 @@
                                 <td class="py-2.5 px-3 font-semibold text-gray-700">{{ $aturan->judul ?? $aturan->nama_aturan }}</td>
                                 <td class="py-2.5 px-3 text-center font-bold text-emerald-600">+{{ $aturan->nilai_poin ?? $aturan->poin ?? 0 }}</td>
                                 <td class="py-2.5 px-3 text-center">
-                                    <form action="{{ route('guru.poin-prestasi.kategori.destroy', $aturan->id) }}" method="POST" onsubmit="return confirm('Yakin hapus kategori ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 inline-flex items-center justify-center transition" title="Hapus Kategori">
-                                            <i class="fa-solid fa-trash text-xs"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button" onclick="confirmDeleteCategory('{{ route('guru.poin-prestasi.kategori.destroy', $aturan->id) }}', '{{ addslashes($aturan->judul ?? $aturan->nama_aturan) }}')" class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 inline-flex items-center justify-center transition" title="Hapus Kategori">
+                                        <i class="fa-solid fa-trash text-xs"></i>
+                                    </button>
                                 </td>
                             </tr>
                         @empty
@@ -301,6 +297,27 @@
 
         <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex justify-end flex-shrink-0">
             <button type="button" onclick="closeManageCategoryModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-xs font-medium hover:bg-gray-300 transition">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Pop-Up Konfirmasi Hapus Kategori Kustom -->
+<div id="deleteCategoryModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-[70] p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden text-center p-6 space-y-4">
+        <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-xl">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+            <h3 class="font-bold text-base text-gray-800">Hapus Kategori Ini?</h3>
+            <p class="text-xs text-gray-500 mt-1">Anda akan menghapus kategori <span id="deleteCategoryNameLabel" class="font-bold text-gray-700"></span>. Tindakan ini tidak dapat dibatalkan.</p>
+        </div>
+        <div class="flex items-center justify-center gap-2 pt-2">
+            <button type="button" onclick="closeDeleteCategoryModal()" class="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition">Batal</button>
+            <form id="deleteCategoryForm" method="POST" class="w-full">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="w-full px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md transition">Ya, Hapus</button>
+            </form>
         </div>
     </div>
 </div>
@@ -410,6 +427,20 @@ function closeManageCategoryModal(){
     m.classList.remove('flex');
 }
 
+function confirmDeleteCategory(actionUrl, categoryName) {
+    const modal = document.getElementById('deleteCategoryModal');
+    document.getElementById('deleteCategoryForm').action = actionUrl;
+    document.getElementById('deleteCategoryNameLabel').textContent = `"${categoryName}"`;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeDeleteCategoryModal() {
+    const modal = document.getElementById('deleteCategoryModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
 function filterData(){
     const search = document.getElementById('searchInput').value.toLowerCase().trim();
     const bulan = document.getElementById('filterBulan').value;
@@ -426,6 +457,7 @@ document.addEventListener('click', function(e) {
     if (e.target === document.getElementById('achievementModal')) closeModal();
     if (e.target === document.getElementById('addCategoryModal')) closeAddCategoryModal();
     if (e.target === document.getElementById('manageCategoryModal')) closeManageCategoryModal();
+    if (e.target === document.getElementById('deleteCategoryModal')) closeDeleteCategoryModal();
 });
 
 document.addEventListener('keydown', function(e) {
@@ -433,6 +465,7 @@ document.addEventListener('keydown', function(e) {
         closeModal();
         closeAddCategoryModal();
         closeManageCategoryModal();
+        closeDeleteCategoryModal();
     }
 });
 </script>

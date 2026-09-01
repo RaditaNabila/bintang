@@ -109,18 +109,15 @@
                                         <i class="fa-solid fa-pen-to-square text-xs"></i>
                                     </button>
 
-                                    <!-- Tombol Hapus -->
-                                    <form action="{{ route('guru.kelola.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus akun ini?');" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button
-                                            type="submit"
-                                            class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition"
-                                            title="Hapus"
-                                        >
-                                            <i class="fa-solid fa-trash text-xs"></i>
-                                        </button>
-                                    </form>
+                                    <!-- Tombol Hapus (Memicu Modal Custom) -->
+                                    <button
+                                        type="button"
+                                        onclick="openDeleteModal('{{ route('guru.kelola.destroy', $user->id) }}', '{{ $user->nama }}')"
+                                        class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition"
+                                        title="Hapus"
+                                    >
+                                        <i class="fa-solid fa-trash text-xs"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -267,6 +264,41 @@
     </div>
 </div>
 
+<!-- Modal Konfirmasi Hapus Akun -->
+<div id="deleteModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl transform transition-all overflow-hidden text-center p-6 space-y-4">
+        <!-- Icon Peringatan -->
+        <div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+
+        <div>
+            <h3 class="font-bold text-base text-gray-800">Konfirmasi Hapus Akun</h3>
+            <p id="deleteMessage" class="text-xs text-gray-500 mt-1.5 leading-relaxed">
+                Apakah Anda yakin ingin menghapus akun ini? Tindakan ini tidak dapat dibatalkan.
+            </p>
+        </div>
+
+        <form id="deleteForm" action="" method="POST" class="flex items-center justify-center gap-2.5 pt-2">
+            @csrf
+            @method('DELETE')
+            <button
+                type="button"
+                onclick="closeDeleteModal()"
+                class="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition"
+            >
+                Batal
+            </button>
+            <button
+                type="submit"
+                class="w-full px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-600/20 transition"
+            >
+                Ya, Hapus
+            </button>
+        </form>
+    </div>
+</div>
+
 <script>
     function openModal(mode, id = '', nama = '', username = '', role = '', status = 'aktif') {
         const modal = document.getElementById('userModal');
@@ -286,7 +318,7 @@
         if (mode === 'edit') {
             modalTitle.innerText = 'Edit Pengguna';
             userForm.action = "{{ url('/guru/kelola-akun') }}/" + id;
-            
+
             let methodInput = document.getElementById('methodField');
             if (!methodInput) {
                 methodInput = document.createElement('input');
@@ -346,6 +378,25 @@
 
     function closeModal() {
         const modal = document.getElementById('userModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    // Fungsi untuk Modal Hapus Custom
+    function openDeleteModal(deleteUrl, userName) {
+        const modal = document.getElementById('deleteModal');
+        const form = document.getElementById('deleteForm');
+        const message = document.getElementById('deleteMessage');
+
+        form.action = deleteUrl;
+        message.innerHTML = `Apakah Anda yakin ingin menghapus akun <strong class="text-gray-800">${userName}</strong>? Tindakan ini tidak dapat dibatalkan.`;
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
         modal.classList.add('hidden');
         modal.classList.remove('flex');
     }
