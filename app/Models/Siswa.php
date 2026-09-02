@@ -32,16 +32,16 @@ class Siswa extends Model
         'kelas_id'      => 'integer',
     ];
 
-    public function transaksiPoin()
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class, 'kelas_id', 'id');
+    }
+
+    public function TransaksiPoin()
     {
         return $this->hasMany(
             TransaksiPoin::class,
             'siswa_id'
         );
-    }
-
-    public function kelas()
-    {
-        return $this->belongsTo(Kelas::class, 'kelas_id', 'id');
     }
 }

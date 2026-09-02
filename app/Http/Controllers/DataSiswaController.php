@@ -57,7 +57,7 @@ class DataSiswaController extends Controller
             'nisn' => 'required|string|max:20|unique:siswa,nisn',
             'nis' => 'nullable|string|max:20',
             'nama_lengkap' => 'required|string|max:255',
-            'kelas_id' => 'required|integer',
+            'kelas_id' => 'required|integer|exists:kelas,id',
             'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
             'poin_saat_ini' => 'nullable|integer',
         ]);

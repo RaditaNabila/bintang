@@ -1,7 +1,7 @@
 @extends('layouts.app')
-@section('title','Poin Prestasi - Bintang Poin')
-@section('page_title','Apresiasi & Prestasi Siswa')
-@section('page_description','Catat kebaikan, kedisiplinan, dan capaian siswa')
+@section('title', 'Poin Prestasi - Bintang Poin')
+@section('page_title', 'Apresiasi & Prestasi Siswa')
+@section('page_description', 'Catat kebaikan, kedisiplinan, dan capaian siswa')
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
@@ -97,7 +97,15 @@
             <table class="w-full text-left border-collapse text-sm" id="achievementTable">
                 <thead>
                     <tr class="border-b border-gray-100 text-gray-400 text-xs uppercase font-medium">
-                        <th class="py-3 px-4">Tanggal</th><th class="py-3 px-4">NIS</th><th class="py-3 px-4">Nama Siswa</th><th class="py-3 px-4">Kelas</th><th class="py-3 px-4">Kategori</th><th class="py-3 px-4">Keterangan Prestasi</th><th class="py-3 px-4 text-center">Poin (+)</th><th class="py-3 px-4 text-center">Total Poin</th><th class="py-3 px-4 text-center">Aksi</th>
+                        <th class="py-3 px-4">Tanggal</th>
+                        <th class="py-3 px-4">NIS</th>
+                        <th class="py-3 px-4">Nama Siswa</th>
+                        <th class="py-3 px-4">Kelas</th>
+                        <th class="py-3 px-4">Jenis Prestasi</th>
+                        <th class="py-3 px-4">Keterangan Prestasi</th>
+                        <th class="py-3 px-4 text-center">Poin (+)</th>
+                        <th class="py-3 px-4 text-center">Total Poin</th>
+                        <th class="py-3 px-4 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -113,11 +121,9 @@
                         <td class="py-3.5 px-4 text-center"><span class="px-2.5 py-1 bg-amber-50 text-amber-700 font-bold rounded-lg text-xs">{{ $item->siswa->poin_saat_ini ?? 0 }}</span></td>
                         <td class="py-3.5 px-4 text-center">
                             <div class="flex items-center justify-center gap-2">
-                                <button type="button" onclick="openEditModal({{ $item->id }},{{ $item->siswa_id }},{{ $item->aturan_poin_id }},@js($item->keterangan),{{ $item->poin }},'{{ \Carbon\Carbon::parse($item->tanggal_transaksi)->format('Y-m-d') }}')" class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 flex items-center justify-center transition" title="Edit"><i class="fa-solid fa-pen-to-square text-xs"></i></button>
-                                <form action="{{ route('guru.poin-prestasi.destroy',$item->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus catatan poin ini?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition" title="Hapus"><i class="fa-solid fa-trash text-xs"></i></button>
-                                </form>
+                                <button type="button" onclick="confirmDeleteTransaction('{{ route('guru.poin-prestasi.destroy', $item->id) }}', '{{ addslashes($item->siswa->nama_lengkap ?? 'Siswa') }}', '{{ addslashes($item->aturanPoin->judul ?? $item->aturanPoin->nama_aturan ?? 'Prestasi') }}')" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition" title="Hapus">
+                                    <i class="fa-solid fa-trash text-xs"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -321,6 +327,27 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Pop-Up Konfirmasi Hapus Catatan Riwayat Transaksi -->
+<div id="deleteTransactionModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-[70] p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden text-center p-6 space-y-4">
+        <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-xl">
+            <i class="fa-solid fa-trash-can"></i>
+        </div>
+        <div>
+            <h3 class="font-bold text-base text-gray-800">Hapus Catatan Prestasi?</h3>
+            <p class="text-xs text-gray-500 mt-1">Anda akan menghapus catatan prestasi siswa <span id="deleteTransactionSiswaLabel" class="font-bold text-gray-700"></span> untuk kategori <span id="deleteTransactionKategoriLabel" class="font-bold text-gray-700"></span>. Poin siswa akan disesuaikan kembali.</p>
+        </div>
+        <div class="flex items-center justify-center gap-2 pt-2">
+            <button type="button" onclick="closeDeleteTransactionModal()" class="w-full px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition">Batal</button>
+            <form id="deleteTransactionForm" method="POST" class="w-full">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="w-full px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md transition">Ya, Hapus</button>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -378,23 +405,6 @@ function openModal(mode){
     m.classList.add('flex');
 }
 
-function openEditModal(id, siswaId, aturanPoinId, keterangan, poin, tanggal) {
-    const modal = document.getElementById('achievementModal');
-    document.getElementById('achievementForm').action = "{{ url('guru/poin-prestasi') }}/" + id;
-    document.getElementById('formMethod').value = 'PUT';
-    document.getElementById('modalTitle').textContent = 'Edit Poin Prestasi';
-
-    if (selectSiswaTs) selectSiswaTs.setValue(siswaId);
-    if (selectAturanPoinTs) selectAturanPoinTs.setValue(aturanPoinId);
-
-    document.getElementById('inputKeterangan').value = keterangan;
-    document.getElementById('inputPoin').value = poin;
-    document.getElementById('inputTanggal').value = tanggal;
-
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-}
-
 function closeModal(){
     const m = document.getElementById('achievementModal');
     m.classList.add('hidden');
@@ -441,6 +451,21 @@ function closeDeleteCategoryModal() {
     modal.classList.remove('flex');
 }
 
+function confirmDeleteTransaction(actionUrl, namaSiswa, namaKategori) {
+    const modal = document.getElementById('deleteTransactionModal');
+    document.getElementById('deleteTransactionForm').action = actionUrl;
+    document.getElementById('deleteTransactionSiswaLabel').textContent = namaSiswa;
+    document.getElementById('deleteTransactionKategoriLabel').textContent = `"${namaKategori}"`;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeDeleteTransactionModal() {
+    const modal = document.getElementById('deleteTransactionModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
 function filterData(){
     const search = document.getElementById('searchInput').value.toLowerCase().trim();
     const bulan = document.getElementById('filterBulan').value;
@@ -458,6 +483,7 @@ document.addEventListener('click', function(e) {
     if (e.target === document.getElementById('addCategoryModal')) closeAddCategoryModal();
     if (e.target === document.getElementById('manageCategoryModal')) closeManageCategoryModal();
     if (e.target === document.getElementById('deleteCategoryModal')) closeDeleteCategoryModal();
+    if (e.target === document.getElementById('deleteTransactionModal')) closeDeleteTransactionModal();
 });
 
 document.addEventListener('keydown', function(e) {
@@ -466,6 +492,7 @@ document.addEventListener('keydown', function(e) {
         closeAddCategoryModal();
         closeManageCategoryModal();
         closeDeleteCategoryModal();
+        closeDeleteTransactionModal();
     }
 });
 </script>
