@@ -21,12 +21,14 @@ use App\Http\Controllers\GuruLaporanController;
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
-
 Route::get('/login', function () {
     return view('welcome');
 })->name('login');
-
 Route::post('/login', [AuthController::class, 'login'])->name('login.process');
+
+Route::get('/lupa-sandi', function () {
+    return view('sandi');
+})->name('lupa.sandi');
 
 Route::get('/pilih-peran', function () {
     return view('pilih-peran');

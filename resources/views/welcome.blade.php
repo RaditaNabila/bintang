@@ -55,6 +55,11 @@
                     @enderror
                 </div>
 
+                {{-- TAMBAHAN LINK LUPA SANDI DI SINI --}}
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+                    <a href="{{ route('lupa.sandi') }}" style="font-size: 12px; color: #f59e0b; text-decoration: none; font-weight: 500;">Lupa Sandi?</a>
+                </div>
+
                 <button type="submit" class="login-btn">Masuk</button>
             </form>
 
