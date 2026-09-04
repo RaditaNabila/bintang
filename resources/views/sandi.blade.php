@@ -77,33 +77,49 @@
             <h2>Reset Sandi</h2>
             <p class="subtitle">Masukkan username Anda dan buat password baru.</p>
 
-            {{-- Kotak Alert Sukses Buatan --}}
-            <div id="alertSukses" style="display: none; color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; padding: 6px; border-radius: 4px; margin-bottom: 10px; text-align: center; font-size: 12px;">
-                Password berhasil diubah! (Mode Tampilan Saja)
-            </div>
+            {{-- Pesan Alert Sukses dari Controller --}}
+            @if(session('success'))
+                <div style="color: #155724; background-color: #d4edda; border: 1px solid #c3e6cb; padding: 6px; border-radius: 4px; margin-bottom: 10px; text-align: center; font-size: 12px;">
+                    {{ session('success') }}
+                </div>
+            @endif
 
-            <form id="formGantiSandi" onsubmit="simpanPalsu(event)">
+            {{-- Pesan Alert Error dari Controller --}}
+            @if(session('error'))
+                <div style="color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 6px; border-radius: 4px; margin-bottom: 10px; text-align: center; font-size: 12px;">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            <form action="{{ route('lupa.sandi.process') }}" method="POST">
+                @csrf
                 <div class="form-group">
                     <label>Username Akun</label>
                     <div class="input-box">
                         <span class="icon">●</span>
-                        <input type="text" name="username" placeholder="Masukkan username Anda" required>
+                        <input type="text" name="username" value="{{ old('username') }}" placeholder="Masukkan username Anda" required autocomplete="username">
                     </div>
+                    @error('username')
+                        <small style="color: red; display: block; margin-top: 2px; font-size: 10px;">{{ $message }}</small>
+                    @enderror
                 </div>
 
                 <div class="form-group">
                     <label>Password Baru</label>
                     <div class="input-box">
                         <span class="icon">●</span>
-                        <input type="password" name="password" placeholder="Masukkan password baru" required>
+                        <input type="password" name="password" placeholder="Masukkan password baru" required autocomplete="new-password">
                     </div>
+                    @error('password')
+                        <small style="color: red; display: block; margin-top: 2px; font-size: 10px;">{{ $message }}</small>
+                    @enderror
                 </div>
 
                 <div class="form-group">
                     <label>Konfirmasi Password Baru</label>
                     <div class="input-box">
                         <span class="icon">●</span>
-                        <input type="password" name="password_confirmation" placeholder="Ulangi password baru" required>
+                        <input type="password" name="password_confirmation" placeholder="Ulangi password baru" required autocomplete="new-password">
                     </div>
                 </div>
 
@@ -122,15 +138,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-        function simpanPalsu(event) {
-            event.preventDefault();
-            document.getElementById('alertSukses').style.display = 'block';
-            setTimeout(() => {
-                document.getElementById('formGantiSandi').reset();
-            }, 1500);
-        }
-    </script>
 </body>
 </html>

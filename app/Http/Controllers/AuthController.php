@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -44,5 +46,33 @@ class AuthController extends Controller
 
         // 5. Jika kredensial salah / login gagal
         return back()->with('error', 'Username atau password salah!')->withInput();
+    }
+
+    public function updatePassword(Request $request)
+    {
+        // 1. Validasi input form
+        $request->validate([
+            'username' => 'required',
+            'password' => 'required|min:6|confirmed',
+        ], [
+            'username.required' => 'Username wajib diisi.',
+            'password.required' => 'Password baru wajib diisi.',
+            'password.min' => 'Password minimal harus 6 karakter.',
+            'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+        ]);
+
+        // 2. Cari data pengguna berdasarkan kolom 'nama_pengguna' menggunakan model Pengguna
+        $user = \App\Models\Pengguna::where('nama_pengguna', $request->username)->first();
+
+        if (!$user) {
+            return back()->with('error', 'Username tidak ditemukan dalam sistem!')->withInput();
+        }
+
+        // 3. Update password baru ke kolom 'kata_sandi' dan enkripsi (Hash)
+        $user->kata_sandi = Hash::make($request->password);
+        $user->save();
+
+        // 4. Redirect kembali dengan pesan sukses
+        return back()->with('success', 'Password berhasil diubah! Silakan login kembali.');
     }
 }

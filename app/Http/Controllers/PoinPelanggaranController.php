@@ -14,14 +14,13 @@ use Illuminate\Support\Facades\Auth;
 class PoinPelanggaranController extends Controller
 {
     /**
-     * Menampilkan halaman Pelanggaran Siswa
+     * Halaman Pelanggaran Siswa
      */
     public function index(Request $request)
     {
-        // =====================================================
+        // ================================
         // FILTER BULAN
-        // =====================================================
-
+        // ================================
         $bulan = $request->get('bulan', now()->format('m-Y'));
 
         try {
@@ -44,11 +43,9 @@ class PoinPelanggaranController extends Controller
             $bulan = now()->format('m-Y');
         }
 
-
-        // =====================================================
-        // DATA TRANSAKSI PELANGGARAN (DENGAN PAGINASI)
-        // =====================================================
-
+        // ================================
+        // TRANSAKSI PELANGGARAN
+        // ================================
         $transaksi = TransaksiPoin::with([
             'siswa.kelas',
             'kategori',
@@ -63,61 +60,52 @@ class PoinPelanggaranController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-
-        // =====================================================
-        // DATA SISWA AKTIF
-        // =====================================================
-
+        // ================================
+        // SISWA AKTIF
+        // ================================
         $siswa = Siswa::with('kelas')
             ->where('status', 'aktif')
             ->orderBy('nama_lengkap')
             ->get();
 
-
-        // =====================================================
+        // ================================
         // KATEGORI PELANGGARAN
-        // =====================================================
-
-        $kategori = Kategori::where('jenis', 'pelanggaran')
-            ->orderBy('id')
+        // ================================
+        $kategoriPelanggaran = Kategori::where('jenis', 'pelanggaran')
+            ->orderBy('nama_kategori')
             ->get();
 
-
-        // =====================================================
-        // ATURAN / JENIS PELANGGARAN
-        // =====================================================
-
+        // ================================
+        // JENIS PELANGGARAN
+        // ================================
         $aturanPelanggaran = AturanPoin::with('kategori')
-            ->whereIn('kategori_id', $kategori->pluck('id'))
+            ->whereIn(
+                'kategori_id',
+                $kategoriPelanggaran->pluck('id')
+            )
             ->orderBy('nilai_poin', 'asc')
             ->orderBy('judul', 'asc')
             ->get();
 
-
-        // =====================================================
-        // TOTAL KASUS BULAN YANG DIPILIH
-        // =====================================================
-
+        // ================================
+        // TOTAL KASUS
+        // ================================
         $totalKasus = TransaksiPoin::where('jenis', 'pelanggaran')
             ->whereMonth('tanggal_transaksi', $bulanFilter)
             ->whereYear('tanggal_transaksi', $tahunFilter)
             ->count();
 
-
-        // =====================================================
-        // TOTAL POIN PELANGGARAN BULAN YANG DIPILIH
-        // =====================================================
-
+        // ================================
+        // TOTAL POIN
+        // ================================
         $totalPoinBulanIni = TransaksiPoin::where('jenis', 'pelanggaran')
             ->whereMonth('tanggal_transaksi', $bulanFilter)
             ->whereYear('tanggal_transaksi', $tahunFilter)
             ->sum('poin');
 
-
-        // =====================================================
+        // ================================
         // PELANGGARAN TERBANYAK
-        // =====================================================
-
+        // ================================
         $pelanggaranTerbanyak = TransaksiPoin::with('aturanPoin')
             ->where('jenis', 'pelanggaran')
             ->whereMonth('tanggal_transaksi', $bulanFilter)
@@ -130,7 +118,6 @@ class PoinPelanggaranController extends Controller
             ->orderByDesc('jumlah')
             ->first();
 
-
         $namaPelanggaranTerbanyak = '-';
 
         if (
@@ -141,15 +128,10 @@ class PoinPelanggaranController extends Controller
                 $pelanggaranTerbanyak->aturanPoin->judul;
         }
 
-
-        // =====================================================
-        // KIRIM DATA KE VIEW
-        // =====================================================
-
         return view('guru.pelanggaran', compact(
             'transaksi',
             'siswa',
-            'kategori',
+            'kategoriPelanggaran',
             'aturanPelanggaran',
             'totalKasus',
             'totalPoinBulanIni',
@@ -160,51 +142,41 @@ class PoinPelanggaranController extends Controller
 
 
     /**
-     * Menyimpan pelanggaran baru
+     * ==========================================
+     * SIMPAN CATATAN PELANGGARAN
+     * ==========================================
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'siswa_id' => 'required|integer|exists:siswa,id',
+            'kategori_id' => 'required|integer|exists:kategori,id',
             'aturan_poin_id' => 'required|integer|exists:aturan_poin,id',
             'keterangan' => 'required|string|max:1000',
             'tanggal_transaksi' => 'required|date',
             'sanksi' => 'nullable|string|max:1000',
         ]);
 
-
         DB::transaction(function () use ($validated) {
-
-            // =================================================
-            // KUNCI DATA SISWA
-            // =================================================
 
             $siswa = Siswa::lockForUpdate()
                 ->findOrFail($validated['siswa_id']);
 
-
-            // =================================================
-            // AMBIL ATURAN PELANGGARAN
-            // =================================================
-
+            // Pastikan jenis pelanggaran memang berada
+            // di kategori yang dipilih
             $aturan = AturanPoin::with('kategori')
                 ->where('id', $validated['aturan_poin_id'])
+                ->where('kategori_id', $validated['kategori_id'])
                 ->whereHas('kategori', function ($query) {
                     $query->where('jenis', 'pelanggaran');
                 })
                 ->firstOrFail();
 
-
-            // =================================================
-            // AMBIL POIN DARI ATURAN
-            // =================================================
-
             $poin = abs((int) $aturan->nilai_poin);
 
-
-            // =================================================
-            // PENGGUNA YANG LOGIN
-            // =================================================
+            if ($poin <= 0) {
+                abort(422, 'Poin pelanggaran tidak valid.');
+            }
 
             $penggunaId = Auth::id();
 
@@ -218,11 +190,6 @@ class PoinPelanggaranController extends Controller
                 abort(422, 'Pengguna guru aktif tidak ditemukan.');
             }
 
-
-            // =================================================
-            // SIMPAN TRANSAKSI
-            // =================================================
-
             TransaksiPoin::create([
                 'siswa_id' => $siswa->id,
                 'pengguna_id' => $penggunaId,
@@ -235,33 +202,177 @@ class PoinPelanggaranController extends Controller
                 'tanggal_transaksi' => $validated['tanggal_transaksi'],
             ]);
 
+            // Kurangi poin siswa
+            $siswa->poin_saat_ini -= $poin;
 
-            // =================================================
-            // KURANGI POIN SISWA
-            // =================================================
-
-            $poinSekarang = $siswa->poin_saat_ini ?? 0;
-
-            $siswa->poin_saat_ini = max(
-                0,
-                $poinSekarang - $poin
-            );
+            if ($siswa->poin_saat_ini < 0) {
+                $siswa->poin_saat_ini = 0;
+            }
 
             $siswa->save();
         });
-
 
         return redirect()
             ->route('guru.pelanggaran')
             ->with(
                 'success',
-                'Catatan pelanggaran siswa berhasil disimpan.'
+                'Catatan pelanggaran siswa berhasil disimpan dan poin siswa telah dikurangi.'
             );
     }
 
 
     /**
-     * Menghapus transaksi pelanggaran
+     * ==========================================
+     * TAMBAH KATEGORI PELANGGARAN
+     * ==========================================
+     */
+    public function storeKategori(Request $request)
+    {
+        $validated = $request->validate([
+            'nama_kategori' => 'required|string|max:255',
+            'poin' => 'required|integer|min:1|max:100',
+        ]);
+
+        Kategori::create([
+            'nama_kategori' => $validated['nama_kategori'],
+            'jenis' => 'pelanggaran',
+            'poin' => $validated['poin'],
+        ]);
+
+        return redirect()
+            ->route('guru.pelanggaran')
+            ->with(
+                'success',
+                'Kategori pelanggaran berhasil ditambahkan.'
+            );
+    }
+
+
+    /**
+     * ==========================================
+     * HAPUS KATEGORI PELANGGARAN
+     * ==========================================
+     */
+    public function destroyKategori($id)
+    {
+        $kategori = Kategori::where('jenis', 'pelanggaran')
+            ->findOrFail($id);
+
+        // Jangan hapus jika masih punya jenis pelanggaran
+        $adaJenis = AturanPoin::where(
+            'kategori_id',
+            $kategori->id
+        )->exists();
+
+        if ($adaJenis) {
+            return redirect()
+                ->route('guru.pelanggaran')
+                ->with(
+                    'error',
+                    'Kategori tidak dapat dihapus karena masih memiliki jenis pelanggaran.'
+                );
+        }
+
+        // Jangan hapus jika sudah pernah digunakan transaksi
+        $adaTransaksi = TransaksiPoin::where(
+            'kategori_id',
+            $kategori->id
+        )->exists();
+
+        if ($adaTransaksi) {
+            return redirect()
+                ->route('guru.pelanggaran')
+                ->with(
+                    'error',
+                    'Kategori tidak dapat dihapus karena sudah digunakan dalam catatan pelanggaran.'
+                );
+        }
+
+        $kategori->delete();
+
+        return redirect()
+            ->route('guru.pelanggaran')
+            ->with(
+                'success',
+                'Kategori pelanggaran berhasil dihapus.'
+            );
+    }
+
+
+    /**
+     * ==========================================
+     * TAMBAH JENIS PELANGGARAN
+     * ==========================================
+     */
+    public function storeJenisPelanggaran(Request $request)
+    {
+        $validated = $request->validate([
+            'kategori_id' => 'required|integer|exists:kategori,id',
+            'nama_jenis' => 'required|string|max:255',
+            'poin' => 'required|integer|min:1|max:100',
+        ]);
+
+        $kategori = Kategori::where('id', $validated['kategori_id'])
+            ->where('jenis', 'pelanggaran')
+            ->firstOrFail();
+
+        AturanPoin::create([
+            'kategori_id' => $kategori->id,
+            'judul' => $validated['nama_jenis'],
+            'nilai_poin' => abs((int) $validated['poin']),
+        ]);
+
+        return redirect()
+            ->route('guru.pelanggaran')
+            ->with(
+                'success',
+                'Jenis pelanggaran berhasil ditambahkan.'
+            );
+    }
+
+
+    /**
+     * ==========================================
+     * HAPUS JENIS PELANGGARAN
+     * ==========================================
+     */
+    public function destroyJenisPelanggaran($id)
+    {
+        $aturan = AturanPoin::with('kategori')
+            ->whereHas('kategori', function ($query) {
+                $query->where('jenis', 'pelanggaran');
+            })
+            ->findOrFail($id);
+
+        $adaTransaksi = TransaksiPoin::where(
+            'aturan_poin_id',
+            $aturan->id
+        )->exists();
+
+        if ($adaTransaksi) {
+            return redirect()
+                ->route('guru.pelanggaran')
+                ->with(
+                    'error',
+                    'Jenis pelanggaran tidak dapat dihapus karena sudah digunakan dalam catatan pelanggaran.'
+                );
+        }
+
+        $aturan->delete();
+
+        return redirect()
+            ->route('guru.pelanggaran')
+            ->with(
+                'success',
+                'Jenis pelanggaran berhasil dihapus.'
+            );
+    }
+
+
+    /**
+     * ==========================================
+     * HAPUS CATATAN PELANGGARAN
+     * ==========================================
      */
     public function destroy($id)
     {
@@ -274,6 +385,7 @@ class PoinPelanggaranController extends Controller
             $siswa = Siswa::lockForUpdate()
                 ->findOrFail($transaksi->siswa_id);
 
+            // Kembalikan poin siswa
             $siswa->poin_saat_ini =
                 ($siswa->poin_saat_ini ?? 0)
                 + abs((int) $transaksi->poin);
@@ -283,64 +395,11 @@ class PoinPelanggaranController extends Controller
             $transaksi->delete();
         });
 
-
         return redirect()
             ->route('guru.pelanggaran')
             ->with(
                 'success',
                 'Catatan pelanggaran berhasil dihapus dan poin siswa dikembalikan.'
             );
-    }
-
-
-    /**
-     * Menambahkan jenis pelanggaran baru
-     */
-    public function storeKategori(Request $request)
-    {
-        $validated = $request->validate([
-            'nama_kategori' => 'required|string|max:255',
-            'kategori_id' => 'required|integer|exists:kategori,id',
-            'poin' => 'required|integer|min:1|max:100',
-        ]);
-
-        DB::transaction(function () use ($validated) {
-
-            $kategori = Kategori::where('id', $validated['kategori_id'])
-                ->where('jenis', 'pelanggaran')
-                ->firstOrFail();
-
-            AturanPoin::create([
-                'kategori_id' => $kategori->id,
-                'judul' => $validated['nama_kategori'],
-                'nilai_poin' => abs((int) $validated['poin']),
-            ]);
-        });
-
-        return redirect()
-            ->route('guru.pelanggaran')
-            ->with(
-                'success',
-                'Jenis pelanggaran berhasil ditambahkan.'
-            );
-    }
-
-    public function destroyKategori($id)
-    {
-        $aturan = AturanPoin::findOrFail($id);
-
-        $adaTransaksi = TransaksiPoin::where('aturan_poin_id', $aturan->id)->exists();
-
-        if ($adaTransaksi) {
-            return redirect()
-                ->route('guru.pelanggaran')
-                ->with('error', 'Jenis pelanggaran tidak dapat dihapus karena sudah digunakan dalam catatan pelanggaran.');
-        }
-
-        $aturan->delete();
-
-        return redirect()
-            ->route('guru.pelanggaran')
-            ->with('success', 'Jenis pelanggaran berhasil dihapus.');
     }
 }

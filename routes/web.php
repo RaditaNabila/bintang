@@ -26,9 +26,13 @@ Route::get('/login', function () {
 })->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.process');
 
+// Rute untuk menampilkan halaman ganti sandi
 Route::get('/lupa-sandi', function () {
-    return view('sandi');
+    return view('sandi'); // Pastikan nama file blade Anda sesuai (misal: sandi.blade.php)
 })->name('lupa.sandi');
+
+// Rute untuk memproses penyimpanan password baru
+Route::post('/lupa-sandi', [AuthController::class, 'updatePassword'])->name('lupa.sandi.process');
 
 Route::get('/pilih-peran', function () {
     return view('pilih-peran');
@@ -83,6 +87,9 @@ Route::prefix('guru')->name('guru.')->middleware('auth')->group(function () {
     Route::delete('/pelanggaran/{id}', [PoinPelanggaranController::class, 'destroy'])->name('pelanggaran.destroy');
     Route::post('/pelanggaran/kategori', [PoinPelanggaranController::class, 'storeKategori'])->name('pelanggaran.storeKategori');
     Route::delete('/pelanggaran/kategori/{id}', [PoinPelanggaranController::class, 'destroyKategori'])->name('pelanggaran.destroyKategori');
+    Route::post('/pelanggaran/jenis', [PoinPelanggaranController::class, 'storeJenisPelanggaran'])->name('pelanggaran.storeJenis');
+    Route::delete('/pelanggaran/jenis/{id}', [PoinPelanggaranController::class, 'destroyJenisPelanggaran'])->name('pelanggaran.destroyJenis');
+
 
     // LAPORAN
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan');
