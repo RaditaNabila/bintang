@@ -1,10 +1,11 @@
 @extends('layouts.app')
 
 @section('page_title', 'Kelola Akun Pengguna')
-@section('page_description', 'Manajemen hak akses ustadz, ustazah, dan wali kelas')
+@section('page_description', 'Manajemen hak akses admin, guru, dan orang tua')
 
 @section('content')
 <div class="space-y-6">
+
     <!-- Alert Success -->
     @if(session('success'))
         <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm font-medium flex items-center justify-between shadow-sm">
@@ -12,7 +13,12 @@
                 <i class="fa-solid fa-circle-check text-emerald-500"></i>
                 {{ session('success') }}
             </span>
-            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700">
+
+            <button
+                type="button"
+                onclick="this.parentElement.remove()"
+                class="text-emerald-500 hover:text-emerald-700"
+            >
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -25,6 +31,7 @@
                 <i class="fa-solid fa-triangle-exclamation text-rose-500"></i>
                 Terjadi kesalahan input:
             </div>
+
             <ul class="list-disc list-inside space-y-1 pl-2">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -35,8 +42,15 @@
 
     <!-- Header Action & Search -->
     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-5 rounded-2xl border border-amber-100 shadow-sm">
-        <form method="GET" action="{{ route('guru.kelola') }}" class="relative w-full sm:w-80">
+
+        <!-- Search -->
+        <form
+            method="GET"
+            action="{{ route('guru.kelola') }}"
+            class="relative w-full sm:w-80"
+        >
             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+
             <input
                 type="text"
                 name="search"
@@ -46,6 +60,7 @@
             >
         </form>
 
+        <!-- Button Tambah -->
         <button
             type="button"
             onclick="openModal('add')"
@@ -58,8 +73,10 @@
 
     <!-- Tabel Data Pengguna -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 overflow-hidden">
+
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-sm" id="accountTable">
+
                 <thead>
                     <tr class="border-b border-gray-100 text-gray-400 text-xs uppercase font-medium">
                         <th class="py-3 px-4">No</th>
@@ -70,30 +87,75 @@
                         <th class="py-3 px-4 text-center">Aksi</th>
                     </tr>
                 </thead>
+
                 <tbody class="divide-y divide-gray-50">
+
                     @forelse ($pengguna as $user)
+
+                        @php
+                            $role = strtolower($user->peran);
+
+                            if ($role === 'admin') {
+                                $roleClass = 'bg-rose-100 text-rose-800';
+                            } elseif ($role === 'guru') {
+                                $roleClass = 'bg-purple-100 text-purple-800';
+                            } else {
+                                $roleClass = 'bg-amber-100 text-amber-800';
+                            }
+                        @endphp
+
                         <tr class="hover:bg-gray-50/50 transition">
-                            <td class="py-3.5 px-4 text-gray-500 text-xs">{{ $loop->iteration + ($pengguna->currentPage() - 1) * $pengguna->perPage() }}</td>
-                            <td class="py-3.5 px-4 font-semibold text-gray-700">{{ $user->nama }}</td>
-                            <td class="py-3.5 px-4 text-gray-500">{{ $user->nama_pengguna }}</td>
+
+                            <!-- No -->
+                            <td class="py-3.5 px-4 text-gray-500 text-xs">
+                                {{ $loop->iteration + ($pengguna->currentPage() - 1) * $pengguna->perPage() }}
+                            </td>
+
+                            <!-- Nama -->
+                            <td class="py-3.5 px-4 font-semibold text-gray-700">
+                                {{ $user->nama }}
+                            </td>
+
+                            <!-- Username -->
+                            <td class="py-3.5 px-4 text-gray-500">
+                                {{ $user->nama_pengguna }}
+                            </td>
+
+                            <!-- Role -->
                             <td class="py-3.5 px-4">
-                                <span class="px-2.5 py-1 text-xs font-medium rounded-full {{ strtolower($user->peran) == 'guru' ? 'bg-purple-100 text-purple-800' : 'bg-amber-100 text-amber-800' }} uppercase">
+
+                                <span class="px-2.5 py-1 text-xs font-medium rounded-full {{ $roleClass }} uppercase">
                                     {{ str_replace('_', ' ', $user->peran) }}
                                 </span>
+
                             </td>
+
+                            <!-- Status -->
                             <td class="py-3.5 px-4">
+
                                 @if(strtolower($user->status ?? 'aktif') === 'aktif')
+
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-medium border border-emerald-200 uppercase">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                        Aktif
                                     </span>
+
                                 @else
+
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 text-rose-600 rounded-full text-xs font-medium border border-rose-200 uppercase">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Nonaktif
+                                        <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                        Nonaktif
                                     </span>
+
                                 @endif
+
                             </td>
+
+                            <!-- Aksi -->
                             <td class="py-3.5 px-4 text-center">
+
                                 <div class="flex items-center justify-center gap-2">
+
                                     <!-- Tombol Edit -->
                                     <button
                                         type="button"
@@ -109,7 +171,7 @@
                                         <i class="fa-solid fa-pen-to-square text-xs"></i>
                                     </button>
 
-                                    <!-- Tombol Hapus (Memicu Modal Custom) -->
+                                    <!-- Tombol Hapus -->
                                     <button
                                         type="button"
                                         onclick="openDeleteModal('{{ route('guru.kelola.destroy', $user->id) }}', '{{ $user->nama }}')"
@@ -118,47 +180,93 @@
                                     >
                                         <i class="fa-solid fa-trash text-xs"></i>
                                     </button>
+
                                 </div>
+
                             </td>
+
                         </tr>
+
                     @empty
+
                         <tr>
                             <td colspan="6" class="py-8 text-center text-gray-400 text-sm">
                                 Belum ada data pengguna.
                             </td>
                         </tr>
+
                     @endforelse
+
                 </tbody>
             </table>
         </div>
 
-        <!-- Render Pagination Links -->
+        <!-- Pagination -->
         <div class="mt-4 pt-4 border-t border-gray-100">
             {{ $pengguna->links() }}
         </div>
+
     </div>
 </div>
 
-<!-- Modal Form (Tambah & Edit) -->
-<div id="userModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm items-center justify-center p-4">
+
+<!-- ========================================================= -->
+<!-- MODAL TAMBAH / EDIT PENGGUNA -->
+<!-- ========================================================= -->
+
+<div
+    id="userModal"
+    class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm items-center justify-center p-4"
+>
+
     <div class="bg-white rounded-2xl max-w-md w-full shadow-xl transform transition-all overflow-hidden flex flex-col max-h-[90vh]">
 
         <!-- Modal Header -->
         <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4 text-white flex justify-between items-center shrink-0">
-            <h3 id="modalTitle" class="font-bold text-base">Tambah Pengguna Baru</h3>
-            <button type="button" onclick="closeModal()" class="text-white/80 hover:text-white text-lg transition">
+
+            <h3 id="modalTitle" class="font-bold text-base">
+                Tambah Pengguna Baru
+            </h3>
+
+            <button
+                type="button"
+                onclick="closeModal()"
+                class="text-white/80 hover:text-white text-lg transition"
+            >
                 <i class="fa-solid fa-xmark"></i>
             </button>
+
         </div>
 
-        <!-- Modal Body & Form -->
-        <form id="userForm" action="" method="POST" class="p-6 space-y-4 overflow-y-auto">
-            @csrf
-            <input type="hidden" id="userId" name="id">
 
-            <!-- Field Nama -->
+        <!-- Modal Body & Form -->
+        <form
+            id="userForm"
+            action=""
+            method="POST"
+            class="p-6 space-y-4 overflow-y-auto"
+        >
+
+            @csrf
+
+            <input
+                type="hidden"
+                id="userId"
+                name="id"
+            >
+
+
+            <!-- Nama -->
             <div>
-                <label for="nama" class="block text-xs font-semibold text-gray-700 mb-1">Nama Lengkap & Gelar <span class="text-rose-500">*</span></label>
+
+                <label
+                    for="nama"
+                    class="block text-xs font-semibold text-gray-700 mb-1"
+                >
+                    Nama Lengkap & Gelar
+                    <span class="text-rose-500">*</span>
+                </label>
+
                 <input
                     type="text"
                     id="nama"
@@ -167,57 +275,121 @@
                     class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition"
                     placeholder="Contoh: Ustadz Abdullah, S.Pd."
                 >
+
             </div>
 
-            <!-- Field Nama Pengguna / Username -->
+
+            <!-- Username -->
             <div>
-                <label for="nama_pengguna" class="block text-xs font-semibold text-gray-700 mb-1">Username <span class="text-rose-500">*</span></label>
+
+                <label
+                    for="nama_pengguna"
+                    class="block text-xs font-semibold text-gray-700 mb-1"
+                >
+                    Username
+                    <span class="text-rose-500">*</span>
+                </label>
+
                 <div class="relative">
+
                     <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+
                     <input
                         type="text"
                         id="nama_pengguna"
                         name="nama_pengguna"
                         required
                         class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition"
-                        placeholder="username_ustadz"
+                        placeholder="username_pengguna"
                     >
+
                 </div>
+
             </div>
 
-            <!-- Field Peran / Role -->
+
+            <!-- Role -->
             <div>
-                <label for="peran" class="block text-xs font-semibold text-gray-700 mb-1">Peran / Jabatan <span class="text-rose-500">*</span></label>
+
+                <label
+                    for="peran"
+                    class="block text-xs font-semibold text-gray-700 mb-1"
+                >
+                    Peran / Jabatan
+                    <span class="text-rose-500">*</span>
+                </label>
+
                 <select
                     id="peran"
                     name="peran"
                     required
                     class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition cursor-pointer"
                 >
-                    <option value="" disabled selected>Pilih Peran Akun</option>
-                    <option value="guru">Guru</option>
-                    <option value="orang_tua">Orang Tua</option>
+
+                    <option value="" disabled selected>
+                        Pilih Peran Akun
+                    </option>
+
+                    <option value="admin">
+                        Admin
+                    </option>
+
+                    <option value="guru">
+                        Guru
+                    </option>
+
+                    <option value="orang_tua">
+                        Orang Tua
+                    </option>
+
                 </select>
+
             </div>
 
-            <!-- Field Status (Saat Edit) -->
+
+            <!-- Status -->
             <div id="statusContainer" class="hidden">
-                <label for="status" class="block text-xs font-semibold text-gray-700 mb-1">Status Akun</label>
+
+                <label
+                    for="status"
+                    class="block text-xs font-semibold text-gray-700 mb-1"
+                >
+                    Status Akun
+                </label>
+
                 <select
                     id="status"
                     name="status"
                     class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition cursor-pointer"
                 >
-                    <option value="aktif">Aktif</option>
-                    <option value="nonaktif">Nonaktif</option>
+
+                    <option value="aktif">
+                        Aktif
+                    </option>
+
+                    <option value="nonaktif">
+                        Nonaktif
+                    </option>
+
                 </select>
+
             </div>
 
-            <!-- Field Kata Sandi -->
+
+            <!-- Kata Sandi -->
             <div>
-                <label for="kata_sandi" class="block text-xs font-semibold text-gray-700 mb-1">Kata Sandi</label>
+
+                <label
+                    for="kata_sandi"
+                    class="block text-xs font-semibold text-gray-700 mb-1"
+                >
+                    Kata Sandi
+                </label>
+
                 <div class="relative">
+
                     <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+
                     <input
                         type="password"
                         id="kata_sandi"
@@ -225,15 +397,31 @@
                         class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition"
                         placeholder="••••••••"
                     >
+
                 </div>
-                <p id="passwordHelp" class="text-[11px] text-amber-600 mt-1 font-medium"></p>
+
+                <p
+                    id="passwordHelp"
+                    class="text-[11px] text-amber-600 mt-1 font-medium"
+                ></p>
+
             </div>
 
-            <!-- Field Konfirmasi Kata Sandi -->
+
+            <!-- Konfirmasi Kata Sandi -->
             <div>
-                <label for="kata_sandi_confirmation" class="block text-xs font-semibold text-gray-700 mb-1">Konfirmasi Kata Sandi</label>
+
+                <label
+                    for="kata_sandi_confirmation"
+                    class="block text-xs font-semibold text-gray-700 mb-1"
+                >
+                    Konfirmasi Kata Sandi
+                </label>
+
                 <div class="relative">
+
                     <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+
                     <input
                         type="password"
                         id="kata_sandi_confirmation"
@@ -241,11 +429,15 @@
                         class="w-full pl-9 pr-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-amber-500 focus:bg-white transition"
                         placeholder="••••••••"
                     >
+
                 </div>
+
             </div>
 
-            <!-- Modal Footer Buttons -->
+
+            <!-- Modal Footer -->
             <div class="flex justify-end gap-2 pt-4 border-t border-gray-100 shrink-0">
+
                 <button
                     type="button"
                     onclick="closeModal()"
@@ -253,35 +445,69 @@
                 >
                     Batal
                 </button>
+
                 <button
                     type="submit"
                     class="px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-medium hover:bg-amber-600 transition shadow-sm"
                 >
                     Simpan Akun
                 </button>
+
             </div>
+
         </form>
+
     </div>
+
 </div>
 
-<!-- Modal Konfirmasi Hapus Akun -->
-<div id="deleteModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm items-center justify-center p-4">
+
+<!-- ========================================================= -->
+<!-- MODAL KONFIRMASI HAPUS -->
+<!-- ========================================================= -->
+
+<div
+    id="deleteModal"
+    class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm items-center justify-center p-4"
+>
+
     <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl transform transition-all overflow-hidden text-center p-6 space-y-4">
-        <!-- Icon Peringatan -->
+
+        <!-- Icon -->
         <div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
             <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
 
+
+        <!-- Text -->
         <div>
-            <h3 class="font-bold text-base text-gray-800">Konfirmasi Hapus Akun</h3>
-            <p id="deleteMessage" class="text-xs text-gray-500 mt-1.5 leading-relaxed">
-                Apakah Anda yakin ingin menghapus akun ini? Tindakan ini tidak dapat dibatalkan.
+
+            <h3 class="font-bold text-base text-gray-800">
+                Konfirmasi Hapus Akun
+            </h3>
+
+            <p
+                id="deleteMessage"
+                class="text-xs text-gray-500 mt-1.5 leading-relaxed"
+            >
+                Apakah Anda yakin ingin menghapus akun ini?
+                Tindakan ini tidak dapat dibatalkan.
             </p>
+
         </div>
 
-        <form id="deleteForm" action="" method="POST" class="flex items-center justify-center gap-2.5 pt-2">
+
+        <!-- Delete Form -->
+        <form
+            id="deleteForm"
+            action=""
+            method="POST"
+            class="flex items-center justify-center gap-2.5 pt-2"
+        >
+
             @csrf
             @method('DELETE')
+
             <button
                 type="button"
                 onclick="closeDeleteModal()"
@@ -289,18 +515,36 @@
             >
                 Batal
             </button>
+
             <button
                 type="submit"
                 class="w-full px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-600/20 transition"
             >
                 Ya, Hapus
             </button>
+
         </form>
+
     </div>
+
 </div>
 
+
 <script>
-    function openModal(mode, id = '', nama = '', username = '', role = '', status = 'aktif') {
+
+    // =========================================================
+    // MODAL TAMBAH / EDIT
+    // =========================================================
+
+    function openModal(
+        mode,
+        id = '',
+        nama = '',
+        username = '',
+        role = '',
+        status = 'aktif'
+    ) {
+
         const modal = document.getElementById('userModal');
         const modalTitle = document.getElementById('modalTitle');
         const userForm = document.getElementById('userForm');
@@ -309,96 +553,215 @@
         const namaInput = document.getElementById('nama');
         const usernameInput = document.getElementById('nama_pengguna');
         const roleInput = document.getElementById('peran');
+
         const statusInput = document.getElementById('status');
         const statusContainer = document.getElementById('statusContainer');
+
         const passwordInput = document.getElementById('kata_sandi');
         const passwordConfirmInput = document.getElementById('kata_sandi_confirmation');
+
         const passwordHelp = document.getElementById('passwordHelp');
 
-        if (mode === 'edit') {
-            modalTitle.innerText = 'Edit Pengguna';
-            userForm.action = "{{ url('/guru/kelola-akun') }}/" + id;
 
-            let methodInput = document.getElementById('methodField');
+        // =====================================================
+        // MODE EDIT
+        // =====================================================
+
+        if (mode === 'edit') {
+
+            modalTitle.innerText = 'Edit Pengguna';
+
+            userForm.action =
+                "{{ url('/guru/kelola-akun') }}/" + id;
+
+
+            // Method PUT
+            let methodInput =
+                document.getElementById('methodField');
+
             if (!methodInput) {
-                methodInput = document.createElement('input');
+
+                methodInput =
+                    document.createElement('input');
+
                 methodInput.type = 'hidden';
                 methodInput.name = '_method';
                 methodInput.id = 'methodField';
+
                 userForm.appendChild(methodInput);
             }
+
             methodInput.value = 'PUT';
 
+
+            // Isi data pengguna
             userIdInput.value = id;
             namaInput.value = nama;
             usernameInput.value = username;
             roleInput.value = role;
             statusInput.value = status;
+
             statusContainer.classList.remove('hidden');
 
+
+            // Password dikosongkan saat edit
             passwordInput.value = '';
             passwordConfirmInput.value = '';
+
             passwordInput.required = false;
 
-            if (passwordHelp) {
-                passwordHelp.innerText = '*Kosongkan jika tidak ingin mengubah kata sandi';
-            }
-        } else {
-            modalTitle.innerText = 'Tambah Pengguna Baru';
-            userForm.action = "{{ route('guru.kelola.store') }}";
 
-            const methodInput = document.getElementById('methodField');
+            if (passwordHelp) {
+
+                passwordHelp.innerText =
+                    '*Kosongkan jika tidak ingin mengubah kata sandi';
+
+            }
+
+        }
+
+
+        // =====================================================
+        // MODE TAMBAH
+        // =====================================================
+
+        else {
+
+            modalTitle.innerText =
+                'Tambah Pengguna Baru';
+
+            userForm.action =
+                "{{ route('guru.kelola.store') }}";
+
+
+            // Hapus method PUT jika sebelumnya edit
+            const methodInput =
+                document.getElementById('methodField');
+
             if (methodInput) {
                 methodInput.remove();
             }
 
+
+            // Reset form
             userForm.reset();
+
             userIdInput.value = '';
+
             statusContainer.classList.add('hidden');
+
             passwordInput.required = true;
+
 
             if (passwordHelp) {
                 passwordHelp.innerText = '';
             }
+
         }
 
+
+        // Tampilkan modal
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+
     }
+
+
+    // =========================================================
+    // BUKA MODAL EDIT
+    // =========================================================
 
     function openEditModal(button) {
-        const id = button.getAttribute('data-id');
-        const nama = button.getAttribute('data-nama');
-        const username = button.getAttribute('data-username');
-        const role = button.getAttribute('data-role');
-        const status = button.getAttribute('data-status');
 
-        openModal('edit', id, nama, username, role, status);
+        const id =
+            button.getAttribute('data-id');
+
+        const nama =
+            button.getAttribute('data-nama');
+
+        const username =
+            button.getAttribute('data-username');
+
+        const role =
+            button.getAttribute('data-role');
+
+        const status =
+            button.getAttribute('data-status');
+
+
+        openModal(
+            'edit',
+            id,
+            nama,
+            username,
+            role,
+            status
+        );
+
     }
+
+
+    // =========================================================
+    // TUTUP MODAL TAMBAH / EDIT
+    // =========================================================
 
     function closeModal() {
-        const modal = document.getElementById('userModal');
+
+        const modal =
+            document.getElementById('userModal');
+
         modal.classList.add('hidden');
         modal.classList.remove('flex');
+
     }
 
-    // Fungsi untuk Modal Hapus Custom
-    function openDeleteModal(deleteUrl, userName) {
-        const modal = document.getElementById('deleteModal');
-        const form = document.getElementById('deleteForm');
-        const message = document.getElementById('deleteMessage');
+
+    // =========================================================
+    // MODAL HAPUS
+    // =========================================================
+
+    function openDeleteModal(
+        deleteUrl,
+        userName
+    ) {
+
+        const modal =
+            document.getElementById('deleteModal');
+
+        const form =
+            document.getElementById('deleteForm');
+
+        const message =
+            document.getElementById('deleteMessage');
+
 
         form.action = deleteUrl;
-        message.innerHTML = `Apakah Anda yakin ingin menghapus akun <strong class="text-gray-800">${userName}</strong>? Tindakan ini tidak dapat dibatalkan.`;
+
+
+        message.innerHTML =
+            `Apakah Anda yakin ingin menghapus akun <strong class="text-gray-800">${userName}</strong>? Tindakan ini tidak dapat dibatalkan.`;
+
 
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+
     }
 
+
+    // =========================================================
+    // TUTUP MODAL HAPUS
+    // =========================================================
+
     function closeDeleteModal() {
-        const modal = document.getElementById('deleteModal');
+
+        const modal =
+            document.getElementById('deleteModal');
+
         modal.classList.add('hidden');
         modal.classList.remove('flex');
+
     }
+
 </script>
+
 @endsection

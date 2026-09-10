@@ -15,14 +15,21 @@ class LaporanController extends Controller
 
         $kelas = Kelas::all();
 
-        $siswaQuery = Siswa::with('kelas')->where('status', 'aktif');
+        $siswaQuery = Siswa::with('kelas')
+            ->where('status', 'aktif');
 
-        // Filter berdasarkan kelas
+        // =========================
+        // FILTER BERDASARKAN KELAS
+        // =========================
+
         if ($kelasId !== 'all') {
             $siswaQuery->where('kelas_id', $kelasId);
         }
 
-        // Filter berdasarkan nama / NISN
+        // =========================
+        // FILTER NAMA / NIS / NISN
+        // =========================
+
         if (!empty($search)) {
             $siswaQuery->where(function ($q) use ($search) {
                 $q->where('nisn', 'like', "%{$search}%")
@@ -31,8 +38,26 @@ class LaporanController extends Controller
             });
         }
 
-        $siswa = $siswaQuery->orderBy('nama_lengkap', 'asc')->paginate(15)->withQueryString();
+        // =========================
+        // DATA SISWA
+        // =========================
 
-        return view('guru.laporan', compact('siswa', 'kelas'));
+        $siswa = $siswaQuery
+            ->orderBy('nama_lengkap', 'asc')
+            ->paginate(15)
+            ->withQueryString();
+
+        // =========================
+        // TENTUKAN VIEW BERDASARKAN ROLE
+        // =========================
+
+        $view = $request->routeIs('pengajar.laporan')
+            ? 'pengajar.laporan'
+            : 'guru.laporan';
+
+        return view($view, compact(
+            'siswa',
+            'kelas'
+        ));
     }
 }

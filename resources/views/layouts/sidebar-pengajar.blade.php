@@ -17,58 +17,63 @@
         {{-- NAVIGATION --}}
         <nav class="p-2.5 space-y-0.5 text-sm font-medium overflow-y-auto flex-1">
             {{-- DASHBOARD --}}
-            <a href="{{ route('guru.dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('guru.dashboard') ? 'bg-white/20 text-white shadow-sm' : 'hover:bg-white/10 text-amber-50' }}">
+            <a href="{{ route('pengajar.dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('pengajar.dashboard') ? 'bg-white/20 text-white shadow-sm' : 'hover:bg-white/10 text-amber-50' }}">
                 <i class="fa-solid fa-chart-pie w-4 text-center text-xs"></i>
                 <span>Dashboard</span>
             </a>
 
-            {{-- KELOLA AKUN --}}
-            <a href="{{ route('guru.kelola') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('guru.kelola') ? 'bg-white/20 text-white shadow-sm' : 'hover:bg-white/10 text-amber-50' }}">
-                <i class="fa-solid fa-user-gear w-4 text-center text-xs"></i>
-                <span>Kelola Akun</span>
-            </a>
-
             {{-- DATA SISWA --}}
-            <a href="{{ route('guru.data-siswa') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('guru.data-siswa', 'guru.naik-kelas') ? 'bg-white/20 text-white shadow-sm' : 'hover:bg-white/10 text-amber-50' }}">
-                <i class="fa-solid fa-user-graduate w-4 text-center text-xs"></i>
+            <a href="{{ route('pengajar.data-siswa') }}"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg transition
+            {{ request()->routeIs('pengajar.data-siswa')
+                    ? 'bg-white/20 text-white shadow-sm'
+                    : 'hover:bg-white/10 text-amber-50' }}">
+
+                <i class="fa-solid fa-users w-4 text-center text-xs"></i>
                 <span>Data Siswa</span>
             </a>
 
-            {{-- RELASI --}}
-            <a href="{{ route('guru.relasi-wali-siswa.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('guru.relasi-wali-siswa.index') ? 'bg-white/20 text-white shadow-sm' : 'hover:bg-white/10 text-amber-50' }}">
-                <i class="fa-solid fa-link w-4 text-center text-xs"></i>
-                <span>Relasi Wali-Siswa</span>
-            </a>
-
             {{-- POIN PRESTASI --}}
-            <a href="{{ route('guru.poin-prestasi') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('guru.poin-prestasi') ? 'bg-white/20 text-white shadow-sm' : 'hover:bg-white/10 text-amber-50' }}">
-                <i class="fa-solid fa-award w-4 text-center text-xs"></i>
-                <span>Poin Prestasi</span>
-            </a>
+            <a href="{{ route('pengajar.poin-prestasi') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition
+            {{ request()->routeIs('pengajar.poin-prestasi*')
+                ? 'bg-white/20 text-white shadow-sm'
+                : 'hover:bg-white/10 text-amber-50' }}">
+            <i class="fa-solid fa-trophy w-4 text-center text-xs"></i>
+            <span>Poin Prestasi</span>
+        </a>
 
             {{-- PELANGGARAN --}}
-            <a href="{{ route('guru.pelanggaran') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('guru.pelanggaran') ? 'bg-white/20 text-white shadow-sm' : 'hover:bg-white/10 text-amber-50' }}">
+            <a href="{{ route('pengajar.pelanggaran') }}"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg transition
+            {{ request()->routeIs('pengajar.pelanggaran*')
+                    ? 'bg-white/20 text-white shadow-sm'
+                    : 'hover:bg-white/10 text-amber-50' }}">
+
                 <i class="fa-solid fa-triangle-exclamation w-4 text-center text-xs"></i>
                 <span>Pelanggaran</span>
             </a>
 
             {{-- LAPORAN --}}
-            <a href="{{ route('guru.laporan') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('guru.laporan') ? 'bg-white/20 text-white shadow-sm' : 'hover:bg-white/10 text-amber-50' }}">
-                <i class="fa-solid fa-file-invoice w-4 text-center text-xs"></i>
+            <a href="{{ route('pengajar.laporan') }}"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg transition
+            {{ request()->routeIs('pengajar.laporan*')
+                    ? 'bg-white/20 text-white shadow-sm'
+                    : 'hover:bg-white/10 text-amber-50' }}">
+
+                <i class="fa-solid fa-file-lines w-4 text-center text-xs"></i>
                 <span>Laporan</span>
             </a>
 
-            {{-- INFORMASI --}}
-            <a href="{{ route('guru.informasi') }}" onclick="closeSidebar()" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('guru.informasi') ? 'bg-white/20 text-white shadow-sm' : 'hover:bg-white/10 text-amber-50' }}">
-                <i class="fa-solid fa-circle-info w-4 text-center text-xs"></i>
-                <span>Informasi</span>
-            </a>
+{{-- INFORMASI --}}
+<a href="{{ route('pengajar.info') }}"
+   class="flex items-center gap-3 px-3 py-2 rounded-lg transition
+   {{ request()->routeIs('pengajar.info*')
+        ? 'bg-white/20 text-white shadow-sm'
+        : 'hover:bg-white/10 text-amber-50' }}">
 
-            {{-- ARSIP --}}
-            <a href="{{ route('guru.arsip') }}" onclick="closeSidebar()" class="flex items-center gap-3 px-3 py-2 rounded-lg transition {{ request()->routeIs('guru.arsip') ? 'bg-white/20 text-white shadow-sm' : 'hover:bg-white/10 text-amber-50' }}">
-                <i class="fa-solid fa-box-archive w-4 text-center text-xs"></i>
-                <span>Arsip</span>
-            </a>
+    <i class="fa-solid fa-circle-info w-4 text-center text-xs"></i>
+    <span>Informasi</span>
+</a>
         </nav>
     </div>
 
@@ -83,9 +88,7 @@
                     <p class="text-xs font-semibold leading-none truncate">
                         {{ Auth::user()->nama ?? 'Pengguna' }}
                     </p>
-                    <span class="text-[10px] text-amber-200 capitalize">
-                        {{ Auth::user()->peran ?? 'Guru' }}
-                    </span>
+                    <span class="text-[10px] text-amber-200 capitalize">Guru</span>
                 </div>
             </div>
 
@@ -121,7 +124,6 @@
                 Batal
             </button>
 
-            <!-- Form POST untuk Logout -->
             <form action="{{ route('logout') }}" method="POST" class="flex-1">
                 @csrf
                 <button type="submit" class="w-full px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-xl text-xs font-semibold text-center transition shadow-sm">

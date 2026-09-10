@@ -114,7 +114,34 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         | KIRIM DATA KE VIEW
         |--------------------------------------------------------------------------
+        |
+        | Admin / Kepala Sekolah:
+        | resources/views/guru/dashboard.blade.php
+        |
+        | Guru / Pengajar:
+        | resources/views/pengajar/dashboard.blade.php
+        |
+        |--------------------------------------------------------------------------
         */
+
+        if (auth()->user()->peran === 'guru') {
+            return view('pengajar.dashboard', compact(
+                'totalSiswa',
+                'poinApresiasi',
+                'totalPelanggaran',
+                'pencatatanHariIni',
+                'trendLabels',
+                'trendApresiasi',
+                'trendPelanggaran',
+                'kategoriIbadah',
+                'kategoriDisiplin',
+                'kategoriAkademik',
+                'kategoriPelanggaran',
+                'aktivitasTerbaru'
+            ));
+        }
+
+        // Admin / Kepala Sekolah
         return view('guru.dashboard', compact(
             'totalSiswa',
             'poinApresiasi',

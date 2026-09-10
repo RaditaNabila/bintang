@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 class DataSiswaController extends Controller
 {
     /**
-     * Menampilkan data siswa dengan Pagination 15 & Filter/Search
+     * Menampilkan data siswa dengan Pagination 10 & Filter/Search
      */
     public function index(Request $request)
     {
@@ -37,7 +37,7 @@ class DataSiswaController extends Controller
         if (!empty($search)) {
             $siswaQuery->where(function ($q) use ($search) {
                 $q->where('nisn', 'like', "%{$search}%")
-                ->orWhere('nama_lengkap', 'like', "%{$search}%");
+                    ->orWhere('nama_lengkap', 'like', "%{$search}%");
             });
         }
 
@@ -45,8 +45,17 @@ class DataSiswaController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        // Jika login sebagai Guru/Pengajar,
+        // tampilkan halaman Data Siswa read-only
+        if (auth()->user()->peran === 'guru') {
+            return view('pengajar.data-siswa', compact('siswa', 'kelas'));
+        }
+
+        // Jika login sebagai Admin,
+        // tetap tampilkan halaman Data Siswa lengkap
         return view('guru.data-siswa', compact('siswa', 'kelas'));
     }
+
 
     /**
      * Menyimpan siswa baru
@@ -77,6 +86,7 @@ class DataSiswaController extends Controller
             ->with('success', 'Data siswa berhasil ditambahkan.');
     }
 
+
     /**
      * Mengubah data siswa
      */
@@ -100,6 +110,7 @@ class DataSiswaController extends Controller
             ->with('success', 'Data siswa berhasil diperbarui.');
     }
 
+
     /**
      * Mengarsipkan siswa
      */
@@ -114,6 +125,7 @@ class DataSiswaController extends Controller
         $siswa = Siswa::with('kelas')->findOrFail($id);
 
         DB::transaction(function () use ($request, $siswa) {
+
             $jenisArsip = $request->jenis_arsip;
 
             ArsipAlumni::create([
@@ -141,8 +153,14 @@ class DataSiswaController extends Controller
 
         return redirect()
             ->route('guru.data-siswa')
-            ->with('success', 'Siswa berhasil diarsipkan sebagai ' . $request->jenis_arsip . '.');
+            ->with(
+                'success',
+                'Siswa berhasil diarsipkan sebagai '
+                . $request->jenis_arsip
+                . '.'
+            );
     }
+
 
     /**
      * Reset poin siswa menjadi 250
@@ -171,7 +189,10 @@ class DataSiswaController extends Controller
             if (empty($ids)) {
                 return redirect()
                     ->route('guru.data-siswa')
-                    ->with('error', 'Tidak ada siswa yang dipilih untuk direset.');
+                    ->with(
+                        'error',
+                        'Tidak ada siswa yang dipilih untuk direset.'
+                    );
             }
 
             Siswa::whereIn('id', $ids)
@@ -187,6 +208,7 @@ class DataSiswaController extends Controller
             ->route('guru.data-siswa')
             ->with('success', $message);
     }
+
 
     /**
      * Menambahkan ruangan kelas baru
@@ -205,7 +227,10 @@ class DataSiswaController extends Controller
         if ($cek) {
             return redirect()
                 ->route('guru.data-siswa')
-                ->with('error', 'Ruangan kelas tersebut sudah ada.');
+                ->with(
+                    'error',
+                    'Ruangan kelas tersebut sudah ada.'
+                );
         }
 
         Kelas::create([
@@ -215,8 +240,12 @@ class DataSiswaController extends Controller
 
         return redirect()
             ->route('guru.data-siswa')
-            ->with('success', 'Ruangan kelas berhasil ditambahkan.');
+            ->with(
+                'success',
+                'Ruangan kelas berhasil ditambahkan.'
+            );
     }
+
 
     /**
      * Menghapus ruangan kelas
@@ -225,17 +254,23 @@ class DataSiswaController extends Controller
     {
         $kelas = Kelas::findOrFail($id);
 
-        // Opsional: Cek jika kelas masih digunakan siswa
+        // Cek jika kelas masih digunakan siswa
         if ($kelas->siswa()->count() > 0) {
             return redirect()
                 ->route('guru.data-siswa')
-                ->with('error', 'Kelas tidak dapat dihapus karena masih digunakan oleh siswa.');
+                ->with(
+                    'error',
+                    'Kelas tidak dapat dihapus karena masih digunakan oleh siswa.'
+                );
         }
 
         $kelas->delete();
 
         return redirect()
             ->route('guru.data-siswa')
-            ->with('success', 'Ruangan kelas berhasil dihapus.');
+            ->with(
+                'success',
+                'Ruangan kelas berhasil dihapus.'
+            );
     }
 }

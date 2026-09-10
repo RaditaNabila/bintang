@@ -25,7 +25,7 @@ class KelolaAkunController extends Controller
             })
             ->orderBy('nama', 'asc')
             ->paginate(15)
-            ->withQueryString(); // Mempertahankan query 'search' saat berpindah halaman pagination
+            ->withQueryString();
 
         return view('guru.kelola', compact('pengguna'));
     }
@@ -47,14 +47,14 @@ class KelolaAkunController extends Controller
 
             'peran' => [
                 'required',
-                Rule::in(['guru', 'orang_tua']),
+                Rule::in(['admin', 'guru', 'orang_tua']),
             ],
 
             'kata_sandi' => [
                 'required',
                 'string',
                 'min:6',
-                'confirmed', // Membutuhkan name="kata_sandi_confirmation" di Blade
+                'confirmed',
             ],
         ], [
             'nama.required' => 'Nama lengkap wajib diisi.',
@@ -103,7 +103,7 @@ class KelolaAkunController extends Controller
 
             'peran' => [
                 'required',
-                Rule::in(['guru', 'orang_tua']),
+                Rule::in(['admin', 'guru', 'orang_tua']),
             ],
 
             'status' => [
@@ -115,7 +115,7 @@ class KelolaAkunController extends Controller
                 'nullable',
                 'string',
                 'min:6',
-                'confirmed', // Membutuhkan name="kata_sandi_confirmation" di Blade
+                'confirmed',
             ],
         ], [
             'nama.required' => 'Nama lengkap wajib diisi.',
@@ -132,16 +132,14 @@ class KelolaAkunController extends Controller
             'kata_sandi.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
         ]);
 
-        $pengguna->nama          = $validated['nama'];
+        $pengguna->nama = $validated['nama'];
         $pengguna->nama_pengguna = $validated['nama_pengguna'];
-        $pengguna->peran         = $validated['peran'];
+        $pengguna->peran = $validated['peran'];
 
-        // Update status jika dikirim dari form edit
         if (!empty($validated['status'])) {
             $pengguna->status = $validated['status'];
         }
 
-        // Password hanya diubah jika diisi
         if (!empty($validated['kata_sandi'])) {
             $pengguna->kata_sandi = Hash::make($validated['kata_sandi']);
         }

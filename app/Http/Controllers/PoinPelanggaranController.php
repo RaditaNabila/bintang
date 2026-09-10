@@ -128,7 +128,14 @@ class PoinPelanggaranController extends Controller
                 $pelanggaranTerbanyak->aturanPoin->judul;
         }
 
-        return view('guru.pelanggaran', compact(
+        // ================================
+        // TENTUKAN VIEW
+        // ================================
+        $view = $request->routeIs('pengajar.pelanggaran')
+            ? 'pengajar.pelanggaran'
+            : 'guru.pelanggaran';
+
+        return view($view, compact(
             'transaksi',
             'siswa',
             'kategoriPelanggaran',
@@ -162,8 +169,8 @@ class PoinPelanggaranController extends Controller
             $siswa = Siswa::lockForUpdate()
                 ->findOrFail($validated['siswa_id']);
 
-            // Pastikan jenis pelanggaran memang berada
-            // di kategori yang dipilih
+            // Pastikan jenis pelanggaran sesuai
+            // dengan kategori yang dipilih
             $aturan = AturanPoin::with('kategori')
                 ->where('id', $validated['aturan_poin_id'])
                 ->where('kategori_id', $validated['kategori_id'])
@@ -178,6 +185,9 @@ class PoinPelanggaranController extends Controller
                 abort(422, 'Poin pelanggaran tidak valid.');
             }
 
+            // ================================
+            // PENGGUNA YANG MENCATAT
+            // ================================
             $penggunaId = Auth::id();
 
             if (!$penggunaId) {
@@ -190,6 +200,9 @@ class PoinPelanggaranController extends Controller
                 abort(422, 'Pengguna guru aktif tidak ditemukan.');
             }
 
+            // ================================
+            // SIMPAN TRANSAKSI
+            // ================================
             TransaksiPoin::create([
                 'siswa_id' => $siswa->id,
                 'pengguna_id' => $penggunaId,
@@ -202,8 +215,11 @@ class PoinPelanggaranController extends Controller
                 'tanggal_transaksi' => $validated['tanggal_transaksi'],
             ]);
 
-            // Kurangi poin siswa
-            $siswa->poin_saat_ini -= $poin;
+            // ================================
+            // KURANGI POIN SISWA
+            // ================================
+            $siswa->poin_saat_ini =
+                (int) ($siswa->poin_saat_ini ?? 0) - $poin;
 
             if ($siswa->poin_saat_ini < 0) {
                 $siswa->poin_saat_ini = 0;
@@ -212,8 +228,15 @@ class PoinPelanggaranController extends Controller
             $siswa->save();
         });
 
+        // ================================
+        // REDIRECT SESUAI ROLE / ROUTE
+        // ================================
+        $route = $request->routeIs('pengajar.pelanggaran.store')
+            ? 'pengajar.pelanggaran'
+            : 'guru.pelanggaran';
+
         return redirect()
-            ->route('guru.pelanggaran')
+            ->route($route)
             ->with(
                 'success',
                 'Catatan pelanggaran siswa berhasil disimpan dan poin siswa telah dikurangi.'
@@ -258,7 +281,6 @@ class PoinPelanggaranController extends Controller
         $kategori = Kategori::where('jenis', 'pelanggaran')
             ->findOrFail($id);
 
-        // Jangan hapus jika masih punya jenis pelanggaran
         $adaJenis = AturanPoin::where(
             'kategori_id',
             $kategori->id
@@ -273,7 +295,6 @@ class PoinPelanggaranController extends Controller
                 );
         }
 
-        // Jangan hapus jika sudah pernah digunakan transaksi
         $adaTransaksi = TransaksiPoin::where(
             'kategori_id',
             $kategori->id

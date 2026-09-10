@@ -31,21 +31,32 @@ class AuthController extends Controller
             $user = Auth::user();
 
             // 4. Redirect berdasarkan nilai kolom 'peran'
-            if ($user->peran === 'guru' || $user->peran === 'admin') {
+
+            // Admin / Kepala Sekolah
+            // Tetap menggunakan folder dan route guru
+            if ($user->peran === 'admin') {
                 return redirect()->route('guru.dashboard');
             }
 
-            // Pengarahan untuk akun Orang Tua / Wali ke views/wali.blade.php
+            // Guru / Pengajar
+            // Menggunakan folder dan route pengajar
+            if ($user->peran === 'guru') {
+                return redirect()->route('pengajar.dashboard');
+            }
+
+            // Orang Tua / Wali
             if ($user->peran === 'orang_tua' || $user->peran === 'wali') {
                 return redirect()->route('wali');
             }
 
-            // Fallback default jika peran tidak terdefinisi spesifik
+            // Fallback jika peran tidak terdefinisi
             return redirect()->route('guru.dashboard');
         }
 
         // 5. Jika kredensial salah / login gagal
-        return back()->with('error', 'Username atau password salah!')->withInput();
+        return back()
+            ->with('error', 'Username atau password salah!')
+            ->withInput();
     }
 
     public function updatePassword(Request $request)
@@ -61,18 +72,27 @@ class AuthController extends Controller
             'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
         ]);
 
-        // 2. Cari data pengguna berdasarkan kolom 'nama_pengguna' menggunakan model Pengguna
-        $user = \App\Models\Pengguna::where('nama_pengguna', $request->username)->first();
+        // 2. Cari data pengguna berdasarkan username
+        $user = \App\Models\Pengguna::where(
+            'nama_pengguna',
+            $request->username
+        )->first();
 
         if (!$user) {
-            return back()->with('error', 'Username tidak ditemukan dalam sistem!')->withInput();
+            return back()
+                ->with('error', 'Username tidak ditemukan dalam sistem!')
+                ->withInput();
         }
 
-        // 3. Update password baru ke kolom 'kata_sandi' dan enkripsi (Hash)
+        // 3. Update password baru dan enkripsi menggunakan Hash
         $user->kata_sandi = Hash::make($request->password);
         $user->save();
 
         // 4. Redirect kembali dengan pesan sukses
-        return back()->with('success', 'Password berhasil diubah! Silakan login kembali.');
+        return back()
+            ->with(
+                'success',
+                'Password berhasil diubah! Silakan login kembali.'
+            );
     }
 }
