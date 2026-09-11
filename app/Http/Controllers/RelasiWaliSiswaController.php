@@ -16,6 +16,12 @@ class RelasiWaliSiswaController extends Controller
         // Data dropdown pilihan wali murid
         $wali = Pengguna::where('peran', 'orang_tua')
             ->where('status', 'aktif')
+            ->whereHas('orangTuaSiswa.siswa', function ($query) {
+                $query->whereNotIn('id', function ($subQuery) {
+                    $subQuery->select('siswa_id')
+                        ->from('arsip_alumni');
+                });
+            })
             ->orderBy('nama')
             ->get();
 
@@ -25,7 +31,12 @@ class RelasiWaliSiswaController extends Controller
             ->get();
 
         // Mengambil Wali yang memiliki relasi dengan filter pencarian lintas halaman
-        $waliRelasi = Pengguna::whereHas('orangTuaSiswa')
+        $waliRelasi = Pengguna::whereHas('orangTuaSiswa.siswa', function ($query) {
+                $query->whereNotIn('id', function ($subQuery) {
+                    $subQuery->select('siswa_id')
+                        ->from('arsip_alumni');
+                });
+            })
             ->with(['orangTuaSiswa.siswa.kelas'])
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {

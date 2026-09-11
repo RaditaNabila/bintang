@@ -56,7 +56,6 @@ class DataSiswaController extends Controller
         return view('guru.data-siswa', compact('siswa', 'kelas'));
     }
 
-
     /**
      * Menyimpan siswa baru
      */
@@ -78,6 +77,7 @@ class DataSiswaController extends Controller
             'kelas_id' => $validated['kelas_id'],
             'jenis_kelamin' => $validated['jenis_kelamin'],
             'poin_saat_ini' => $validated['poin_saat_ini'] ?? 250,
+            'poin_reset_at' => now(),
             'status' => 'aktif',
         ]);
 
@@ -85,7 +85,6 @@ class DataSiswaController extends Controller
             ->route('guru.data-siswa')
             ->with('success', 'Data siswa berhasil ditambahkan.');
     }
-
 
     /**
      * Mengubah data siswa
@@ -109,7 +108,6 @@ class DataSiswaController extends Controller
             ->route('guru.data-siswa')
             ->with('success', 'Data siswa berhasil diperbarui.');
     }
-
 
     /**
      * Mengarsipkan siswa
@@ -161,9 +159,11 @@ class DataSiswaController extends Controller
             );
     }
 
-
     /**
      * Reset poin siswa menjadi 250
+     *
+     * Transaksi lama TIDAK dihapus.
+     * Waktu reset disimpan pada poin_reset_at.
      */
     public function resetPoin(Request $request)
     {
@@ -173,11 +173,14 @@ class DataSiswaController extends Controller
             'ids.*' => 'integer|exists:siswa,id',
         ]);
 
+        $resetAt = now();
+
         if ($request->scope === 'all') {
 
             Siswa::where('status', 'aktif')
                 ->update([
-                    'poin_saat_ini' => 250
+                    'poin_saat_ini' => 250,
+                    'poin_reset_at' => $resetAt,
                 ]);
 
             $message = 'Poin seluruh siswa aktif berhasil direset menjadi 250.';
@@ -198,7 +201,8 @@ class DataSiswaController extends Controller
             Siswa::whereIn('id', $ids)
                 ->where('status', 'aktif')
                 ->update([
-                    'poin_saat_ini' => 250
+                    'poin_saat_ini' => 250,
+                    'poin_reset_at' => $resetAt,
                 ]);
 
             $message = 'Poin siswa pada tampilan saat ini berhasil direset menjadi 250.';
@@ -208,7 +212,6 @@ class DataSiswaController extends Controller
             ->route('guru.data-siswa')
             ->with('success', $message);
     }
-
 
     /**
      * Menambahkan ruangan kelas baru
@@ -245,7 +248,6 @@ class DataSiswaController extends Controller
                 'Ruangan kelas berhasil ditambahkan.'
             );
     }
-
 
     /**
      * Menghapus ruangan kelas

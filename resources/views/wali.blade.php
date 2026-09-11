@@ -291,19 +291,20 @@
                                     </span>
 
                                 </div>
+                
+                                {{-- JENIS PRESTASI / PELANGGARAN --}}
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <span class="font-medium text-gray-600">
+                                        {{ $isPrestasi ? 'Jenis Prestasi:' : 'Jenis Pelanggaran:' }}
+                                    </span>
+                                    <span class="text-gray-700 font-semibold">
+                                        {{ $transaksi->aturanPoin->judul ?? $transaksi->aturanPoin->nama_aturan ?? '-' }}
+                                    </span>
+                                </p>
 
-                                {{-- KETERANGAN --}}
-                                <h4 class="text-sm font-semibold text-gray-800 mt-1">
-
-                                    {{ $transaksi->keterangan }}
-
-                                </h4>
-
-                                {{-- JENIS --}}
+                                {{-- KETERANGAN TAMBAHAN --}}
                                 <p class="text-xs text-gray-500 mt-0.5">
-
                                     {{ $isPrestasi ? 'Poin tambahan' : 'Poin pengurangan' }}
-
                                 </p>
 
                             </div>

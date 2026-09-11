@@ -17,6 +17,19 @@ class KelolaAkunController extends Controller
         $search = $request->query('search');
 
         $pengguna = Pengguna::query()
+            ->where(function ($query) {
+                // Semua akun selain orang tua tetap ditampilkan
+                $query->where('peran', '!=', 'orang_tua')
+
+                    // Akun orang tua hanya ditampilkan jika masih memiliki
+                    // minimal satu anak yang belum diarsipkan
+                    ->orWhereHas('orangTuaSiswa.siswa', function ($q) {
+                        $q->whereNotIn('id', function ($subQuery) {
+                            $subQuery->select('siswa_id')
+                                ->from('arsip_alumni');
+                        });
+                    });
+            })
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('nama', 'like', "%{$search}%")

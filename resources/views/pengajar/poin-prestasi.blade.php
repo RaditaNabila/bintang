@@ -342,7 +342,7 @@
                                 Jenis Prestasi <span class="text-red-500">*</span>
                             </label>
                             <button type="button" onclick="openManageCategoryModal()" class="text-[11px] font-semibold text-amber-600 hover:text-amber-700 flex items-center gap-1">
-                                <i class="fa-solid fa-list text-[10px]"></i> Kelola Kategori
+                                <i class="fa-solid fa-list text-[10px]"></i> Kelola Jenis
                             </button>
                         </div>
                         <select name="aturan_poin_id" id="selectAturanPoin" required placeholder="Cari jenis prestasi...">
@@ -362,9 +362,9 @@
                             <label class="block text-xs font-semibold text-gray-700">
                                 Jumlah Poin (+) <span class="text-red-500">*</span>
                             </label>
-                            <span class="text-[10px] text-amber-600 font-medium">*Otomatis berdasarkan kategori</span>
+                            <span class="text-[10px] text-amber-600 font-medium">*Otomatis berdasarkan jenis</span>
                         </div>
-                        <input type="number" name="poin" id="inputPoin" required min="1" max="100" placeholder="Poin otomatis dari jenis prestasi" class="w-full px-3.5 py-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-xs text-amber-900 font-bold focus:outline-none focus:border-amber-500 transition">
+                        <input type="number" name="poin" id="inputPoin" required min="1" max="100" readonly class="w-full px-3.5 py-2 border border-amber-300 bg-amber-50/50 font-bold text-amber-900 rounded-xl text-xs focus:outline-none focus:border-amber-500 cursor-not-allowed">
                     </div>
 
                     <div>
